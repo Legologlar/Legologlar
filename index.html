@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -108,6 +109,29 @@
 </div>
 
 <script>
+    // --- GITHUB GIST AYARLARI ---
+    // Buraya gist.github.com'dan aldığın Gist ID'sini yapıştır.
+    const GIST_ID = "b4f5552928fa5ed03c3bcce52caa3381"; 
+    const GIST_FILE_NAME = "ihbar_verisi.json";
+    const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
+
+    // Her 20 saniyede bir GitHub Gist'ten güncel sayıyı okur
+    async function syncCount() {
+        try {
+            const response = await fetch(GIST_API_URL + "?t=" + new Date().getTime());
+            if (!response.ok) return;
+            const data = await response.json();
+            const content = JSON.parse(data.files[GIST_FILE_NAME].content);
+            document.getElementById('countVal').innerText = content.toplam;
+        } catch (e) {
+            console.error("Senkronizasyon hatası: Gist verisi okunamadı.");
+        }
+    }
+    
+    // Zamanlayıcıları Başlat
+    setInterval(syncCount, 20000);
+    syncCount();
+
     // --- NAVİGASYON ---
     function showPage(id) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -120,27 +144,10 @@
         }
     }
 
-    // --- İHBAR SİSTEMİ VE SENKRONİZASYON ---
+    // --- İHBAR SİSTEMİ ---
     var map = L.map('map').setView([39.0, 35.0], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     var marker = null, selectedLoc = null;
-
-    // 20 Saniyede bir JSON dosyasından güncel sayıyı okur
-    async function syncCount() {
-        try {
-            // GitHub Pages üzerindeki 'ihbar_sayisi.json' dosyasını okur
-            // '?t=' eki tarayıcının dosyayı önbelleğe (cache) almasını engeller
-            const response = await fetch('ihbar_sayisi.json?t=' + new Date().getTime());
-            if (response.ok) {
-                const data = await response.json();
-                document.getElementById('countVal').innerText = data.totalReports;
-            }
-        } catch (e) { console.log("Veri çekilemedi."); }
-    }
-    
-    // Zamanlayıcıyı başlat
-    setInterval(syncCount, 20000);
-    syncCount(); // Sayfa açılır açılmaz bir kez çalıştır
 
     map.on('click', function(e) {
         selectedLoc = e.latlng;
@@ -151,14 +158,19 @@
     function submitReport() {
         const desc = document.getElementById('rDesc').value;
         const light = document.getElementById('rLight').value;
-
-        // BAŞARI KONTROLÜ: Eğer bilgiler eksikse sayı artmaz ve işlem durur
+        
+        // Başarı Kontrolü (Bilgiler eksikse sayı artmaz)
         if(!selectedLoc || desc.length < 5) { 
             alert("Lütfen haritadan konum seçin ve açıklama yazın!"); 
             return; 
         }
 
-        // Risk Analizi
+        // Ekranda sayıyı bir artır (Senkronizasyon gerçekleşene kadar kullanıcıya gösterir)
+        let currentCount = parseInt(document.getElementById('countVal').innerText);
+        let newCount = currentCount + 1;
+        document.getElementById('countVal').innerText = newCount;
+
+        // Analiz Hesaplamaları
         let score = Math.min(desc.length / 2, 60) + (light === "night" ? 40 : 20);
         score = Math.floor(Math.min(score, 100));
         let priority = Math.ceil(score / 20);
@@ -166,11 +178,6 @@
         document.getElementById('scoreDisplay').innerText = score;
         document.getElementById('priorityText').innerText = "Öncelik: " + priority;
         document.getElementById('trustBorder').style.borderLeftColor = score > 75 ? "red" : "orange";
-        
-        // Ekranda sayıyı geçici olarak artır (Senkronizasyon için)
-        let currentCount = parseInt(document.getElementById('countVal').innerText);
-        let newCount = currentCount + 1;
-        document.getElementById('countVal').innerText = newCount;
 
         const data = {
             id: newCount,
@@ -181,12 +188,14 @@
             tarih: new Date().toLocaleString()
         };
 
-        // JSON İndirme İşlemi
+        // JSON İndirme
         const blob = new Blob([JSON.stringify(data, null, 2)], {type : 'application/json'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = `ihbar_analiz_${newCount}.json`;
         a.click();
+        
+        alert("İhbar başarıyla kaydedildi! Toplam sayı güncellendi.");
     }
 
     // --- DINAMIK QUIZ (JSON'DAN OKUMA) ---
@@ -211,7 +220,7 @@
             loadQuestion();
         } catch (error) {
             console.error(error);
-            document.getElementById('quiz-container').innerHTML = "<h3>Hata: sorular.json yüklenemedi.</h3>";
+            document.getElementById('quiz-container').innerHTML = "<h3>Hata: sorular.json dosyası yüklenemedi.</h3>";
         }
     }
 
@@ -235,8 +244,7 @@
     }
 
     function handleAnswer(selectedIdx) {
-        const correctIdx = selectedQuestions[currentQIdx][4];
-        if(selectedIdx === correctIdx) { score++; }
+        if(selectedIdx === selectedQuestions[currentQIdx][4]) { score++; }
         currentQIdx++;
         if(currentQIdx < selectedQuestions.length) { loadQuestion(); } else { showResult(); }
     }
@@ -245,10 +253,4 @@
         document.getElementById('quiz-container').style.display = 'none';
         document.getElementById('quiz-result').style.display = 'block';
         document.getElementById('progress').style.width = "100%";
-        document.getElementById('final-score-title').innerText = `Skorunuz: ${score} / ${selectedQuestions.length}`;
-        let msg = score >= 15 ? "Mükemmel! Bir Miras Koruyucusu Uzmanısınız." : "Güzel deneme! Daha fazla bilgi için araştırmaya devam edin.";
-        document.getElementById('final-msg').innerText = msg;
-    }
-</script>
-</body>
-</html>
+        document.getElementById('final-score-title').innerText = `Skorunuz: ${score} / ${
