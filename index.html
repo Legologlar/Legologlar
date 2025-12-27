@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -111,7 +110,7 @@
 <script>
     // --- GITHUB GIST AYARLARI ---
     // Buraya gist.github.com'dan aldığın Gist ID'sini yapıştır.
-    const GIST_ID = "b4f5552928fa5ed03c3bcce52caa3381"; 
+    const GIST_ID = "BURAYA_GIST_ID_YAPISTIR"; 
     const GIST_FILE_NAME = "ihbar_verisi.json";
     const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
 
@@ -253,4 +252,10 @@
         document.getElementById('quiz-container').style.display = 'none';
         document.getElementById('quiz-result').style.display = 'block';
         document.getElementById('progress').style.width = "100%";
-        document.getElementById('final-score-title').innerText = `Skorunuz: ${score} / ${
+        document.getElementById('final-score-title').innerText = `Skorunuz: ${score} / ${selectedQuestions.length}`;
+        let msg = score >= 15 ? "Mükemmel! Bir Miras Koruyucusu Uzmanısınız." : "Güzel deneme! Daha fazla bilgi için araştırmaya devam edin.";
+        document.getElementById('final-msg').innerText = msg;
+    }
+</script>
+</body>
+</html>
