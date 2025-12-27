@@ -108,26 +108,20 @@
 </div>
 
 <script>
-    // --- GITHUB GIST AYARLARI ---
-    // Buraya gist.github.com'dan aldığın Gist ID'sini yapıştır.
-    const GIST_ID = "BURAYA_GIST_ID_YAPISTIR"; 
-    const GIST_FILE_NAME = "ihbar_verisi.json";
-    const GIST_API_URL = `https://api.github.com/gists/${GIST_ID}`;
+    // --- GOOGLE SHEETS BACKEND AYARLARI ---
+    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyFcIai4hAuiVG_M3q_vYnEQS5R1LFq14izib1MqoO2vXOe4Zi2IHR5mYuSOlPYEpye/exec";
 
-    // Her 20 saniyede bir GitHub Gist'ten güncel sayıyı okur
+    // Sayıyı Google Sheets'ten Çekme (Sync)
     async function syncCount() {
+        if (!BACKEND_URL || BACKEND_URL.includes("BURAYA")) return;
         try {
-            const response = await fetch(GIST_API_URL + "?t=" + new Date().getTime());
-            if (!response.ok) return;
+            const response = await fetch(BACKEND_URL);
             const data = await response.json();
-            const content = JSON.parse(data.files[GIST_FILE_NAME].content);
-            document.getElementById('countVal').innerText = content.toplam;
-        } catch (e) {
-            console.error("Senkronizasyon hatası: Gist verisi okunamadı.");
-        }
+            document.getElementById('countVal').innerText = data.total;
+        } catch (e) { console.error("Veri çekilemedi."); }
     }
     
-    // Zamanlayıcıları Başlat
+    // 20 Saniyede bir otomatik senkronizasyon
     setInterval(syncCount, 20000);
     syncCount();
 
@@ -154,22 +148,33 @@
         marker = L.marker(selectedLoc).addTo(map);
     });
 
-    function submitReport() {
+    async function submitReport() {
         const desc = document.getElementById('rDesc').value;
         const light = document.getElementById('rLight').value;
-        
-        // Başarı Kontrolü (Bilgiler eksikse sayı artmaz)
+
         if(!selectedLoc || desc.length < 5) { 
             alert("Lütfen haritadan konum seçin ve açıklama yazın!"); 
             return; 
         }
 
-        // Ekranda sayıyı bir artır (Senkronizasyon gerçekleşene kadar kullanıcıya gösterir)
-        let currentCount = parseInt(document.getElementById('countVal').innerText);
-        let newCount = currentCount + 1;
-        document.getElementById('countVal').innerText = newCount;
+        // Google Sheets'e POST isteği (Sayıyı artırma)
+        try {
+            fetch(BACKEND_URL, { method: 'POST', mode: 'no-cors' });
+            
+            // Ekranda sayıyı anlık 1 artır (Kullanıcıya hız hissi verir)
+            let current = parseInt(document.getElementById('countVal').innerText);
+            let newCount = current + 1;
+            document.getElementById('countVal').innerText = newCount;
 
-        // Analiz Hesaplamaları
+            // Risk Analizi ve İndirme Süreci
+            finalizeProcess(newCount, desc, light);
+            
+        } catch (e) {
+            alert("Bağlantı hatası oluştu, ancak yerel kayıt yapılıyor.");
+        }
+    }
+
+    function finalizeProcess(newId, desc, light) {
         let score = Math.min(desc.length / 2, 60) + (light === "night" ? 40 : 20);
         score = Math.floor(Math.min(score, 100));
         let priority = Math.ceil(score / 20);
@@ -179,7 +184,7 @@
         document.getElementById('trustBorder').style.borderLeftColor = score > 75 ? "red" : "orange";
 
         const data = {
-            id: newCount,
+            id: newId,
             detay: desc,
             guven: score,
             oncelik: priority,
@@ -187,14 +192,11 @@
             tarih: new Date().toLocaleString()
         };
 
-        // JSON İndirme
         const blob = new Blob([JSON.stringify(data, null, 2)], {type : 'application/json'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `ihbar_analiz_${newCount}.json`;
+        a.download = `ihbar_analiz_${newId}.json`;
         a.click();
-        
-        alert("İhbar başarıyla kaydedildi! Toplam sayı güncellendi.");
     }
 
     // --- DINAMIK QUIZ (JSON'DAN OKUMA) ---
