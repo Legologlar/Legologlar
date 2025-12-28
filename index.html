@@ -202,16 +202,46 @@
 
     // --- QUIZ MANTIĞI ---
     let quizBank = [], selectedQuestions = [], currentQIdx = 0, qScore = 0;
+// --- GÜNCELLENMİŞ QUIZ MANTIĞI ---
+    let quizBank = [], selectedQuestions = [], currentQIdx = 0, qScore = 0;
     async function startQuiz() {
+        const container = document.getElementById('quiz-container');
         try {
-            const response = await fetch('sorular.json');
+            // GitHub'ın eski dosyayı göstermesini engellemek için sonuna zaman damgası ekliyoruz
+            const response = await fetch('sorular.json?v=' + new Date().getTime());
+            
+            if (!response.ok) {
+                throw new Error(`Dosya bulunamadı! (Hata kodu: ${response.status})`);
+            }
+            
             const data = await response.json();
-            selectedQuestions = data.sort(() => 0.5 - Math.random()).slice(0, 20);
-            currentQIdx = 0; qScore = 0;
+            
+            if (!Array.isArray(data) || data.length === 0) {
+                throw new Error("JSON dosyası boş veya formatı hatalı!");
+            }
+
+            quizBank = data;
+            // Eğer dosyada 20'den az soru varsa hata almamak için soru sayısını dinamik belirliyoruz
+            const hedefSoruSayisi = Math.min(quizBank.length, 20);
+            selectedQuestions = quizBank.sort(() => 0.5 - Math.random()).slice(0, hedefSoruSayisi);
+            
+            currentQIdx = 0; 
+            qScore = 0;
+
             document.getElementById('quiz-container').style.display = 'block';
             document.getElementById('quiz-result').style.display = 'none';
             loadQuestion();
-        } catch (e) { document.getElementById('quiz-container').innerHTML = "Sorular yüklenemedi."; }
+            
+        } catch (e) {
+            console.error("Quiz Yükleme Hatası:", e);
+            container.innerHTML = `
+                <div style="background:#ffeeee; color:red; padding:20px; border-radius:15px; border:2px solid red; text-align:center;">
+                    <i class="fas fa-exclamation-triangle" style="font-size:30px;"></i>
+                    <h3>Soru Paketi Yüklenemedi</h3>
+                    <p><b>Hata:</b> ${e.message}</p>
+                    <small>Lütfen 'sorular.json' dosyasının GitHub'da ana klasörde olduğundan emin olun.</small>
+                </div>`;
+        }
     }
 
     function loadQuestion() {
