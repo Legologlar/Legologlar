@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arkeolojik Miras Koruma Portalı | FLL LEGOLOGLAR</title>
+    <title>Kaçak Kazı Bildirim Portalı | FLL LEGOLOGLAR</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -41,7 +41,7 @@
 <div id="report-page" class="page active">
     <header>
         <h1>🏛️ Arkeolojik Miras Koruma Portalı</h1>
-        <p>İhbar Sistemi & Uzmanlık Testi</p>
+        <p>İhbar Sistemi & 20 Soruluk Uzmanlık Testi</p>
     </header>
 
     <div class="section">
@@ -68,12 +68,12 @@
         </select>
 
         <div id="map"></div>
-        <button class="btn-main" onclick="submitReport()">İHBARI GÖNDER VE ANALİZ ET</button>
+        <button class="btn-main" onclick="submitReport()">İHBARI GÜVENLİ GÖNDER VE ANALİZ ET</button>
 
         <div class="quiz-bridge">
             <h3>Arkeoloji Uzmanlık Testi</h3>
             <button class="btn-quiz-go" onclick="showPage('quiz-page')">
-                <i class="fas fa-graduation-cap"></i> Teste Başla
+                <i class="fas fa-graduation-cap"></i> Quize Başla
             </button>
         </div>
     </div>
@@ -99,7 +99,7 @@
     const DEPO_URL = "https://script.google.com/macros/s/AKfycbxww2-ThoWar93P94sxsl_3JxHAY7_RrXjYEfM2i0FVn2LLBozDkkTu6MiU-wCrEQwLtg/exec"; 
     const GIZLI_ANAHTAR = "LegologlarFLL2024";
 
-    // --- HARİTA ---
+    // --- HARİTA BAŞLATMA ---
     var map = L.map('map').setView([39.0, 35.0], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     var marker = null, selectedLoc = null;
@@ -110,7 +110,7 @@
         marker = L.marker(selectedLoc).addTo(map);
     });
 
-    // --- ŞİFRELEME ---
+    // --- ŞİFRELEME ARAÇLARI ---
     function sifrele(metin) { return CryptoJS.AES.encrypt(metin, GIZLI_ANAHTAR).toString(); }
     function sifreCoz(sifreliMetin) {
         try {
@@ -119,78 +119,115 @@
         } catch (e) { return null; }
     }
 
-    // --- SAYAÇ ---
+    // --- ANA FONKSİYONLAR ---
     async function syncCount() {
         try {
             const response = await fetch(BACKEND_URL);
             const data = await response.json();
             document.getElementById('countVal').innerText = data.total;
-        } catch (e) { console.error("Sayaç hatası"); }
+        } catch (e) { console.error("Sayaç güncellenemedi."); }
     }
-    syncCount();
     setInterval(syncCount, 30000);
+    syncCount();
 
-    // --- İHBAR GÖNDERME ---
     async function submitReport() {
         const desc = document.getElementById('rDesc').value;
         const light = document.getElementById('rLight').value;
-        if(!selectedLoc || desc.length < 5) { alert("Konum seçin ve açıklama yazın!"); return; }
+        if(!selectedLoc || desc.length < 5) { alert("Konum ve detaylı açıklama gerekli!"); return; }
 
-        const rawData = { detay: desc, isik: light, koordinat: selectedLoc, tarih: new Date().toLocaleString() };
+        let score = Math.floor(Math.min(Math.min(desc.length / 2, 60) + (light === "night" ? 40 : 20), 100));
+        const rawData = { detay: desc, isik: light, koordinat: selectedLoc, tarih: new Date().toLocaleString(), guven: score };
         const securePackage = sifrele(JSON.stringify(rawData));
 
         try {
             fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ secureData: securePackage }) });
             fetch(BACKEND_URL, { method: 'POST', mode: 'no-cors' });
-
             let current = parseInt(document.getElementById('countVal').innerText);
             document.getElementById('countVal').innerText = current + 1;
-
-            finalizeProcess(current + 1, desc, light);
-            alert("İhbar başarıyla kaydedildi!");
-        } catch (e) { alert("Hata oluştu."); }
+            finalizeProcess(current + 1, desc, light, score);
+            alert("İhbar şifrelenerek merkeze iletildi!");
+        } catch (e) { alert("Bir hata oluştu."); }
     }
 
-    function finalizeProcess(newId, desc, light) {
-        let score = Math.floor(Math.min(Math.min(desc.length / 2, 60) + (light === "night" ? 40 : 20), 100));
+    function finalizeProcess(newId, desc, light, score) {
         let priority = Math.ceil(score / 20);
         document.getElementById('scoreDisplay').innerText = score;
         document.getElementById('priorityText').innerText = "Öncelik: " + priority;
         document.getElementById('trustBorder').style.borderLeftColor = score > 75 ? "red" : "orange";
 
-        const downloadData = { id: newId, detay: desc, guven: score, koordinat: selectedLoc, tarih: new Date().toLocaleString() };
-        const blob = new Blob([JSON.stringify(downloadData, null, 2)], {type : 'application/json'});
+        const data = { id: newId, detay: desc, guven: score, koordinat: selectedLoc, tarih: new Date().toLocaleString() };
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type : 'application/json'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `ihbar_${newId}.json`;
+        a.download = `ihbar_analiz_${newId}.json`;
         a.click();
     }
 
-    // --- QUIZ SİSTEMİ ---
-    let quizBank = [], selectedQuestions = [], currentQIdx = 0, qScore = 0;
+    // --- ADMIN PANELİ (ÖNCELİK SIRALI) ---
+    async function checkAdmin() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('admin') === 'true') {
+            const pass = prompt("Yönetici Şifresi:");
+            if (pass === "1234") renderAdminView();
+        }
+    }
 
+    async function renderAdminView() {
+        document.body.innerHTML = `<div class="section" style="max-width:95%">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+                <h2>🕵️ Yönetici Paneli (Güven/Öncelik Sıralı)</h2>
+                <button class="btn-main" onclick="location.reload()" style="width:100px; background:var(--secondary)">Çıkış</button>
+            </div>
+            <div id="admin-list" style="overflow-x:auto; margin-top:20px;">Yükleniyor...</div>
+        </div>`;
+        try {
+            const res = await fetch(DEPO_URL);
+            const data = await res.json();
+            let items = [];
+            data.forEach(row => {
+                const dec = JSON.parse(sifreCoz(row[1]));
+                if(dec) items.push({ serverDate: row[0], ...dec });
+            });
+
+            // Güven puanına göre sırala
+            items.sort((a, b) => (b.guven || 0) - (a.guven || 0));
+
+            let html = "<table style='width:100%; border-collapse:collapse; min-width:800px;'>";
+            html += "<tr style='background:#eee; text-align:left;'><th>Skor</th><th>Tarih</th><th>Detay</th><th>Işık</th><th>Konum</th></tr>";
+            
+            items.forEach(item => {
+                let color = item.guven > 75 ? "#e74c3c" : (item.guven > 40 ? "#f39c12" : "#27ae60");
+                html += `<tr style='border-bottom:1px solid #ddd;'>
+                    <td style='padding:10px;'><span style='background:${color}; color:white; padding:3px 8px; border-radius:5px;'>%${item.guven || 0}</span></td>
+                    <td style='padding:10px; font-size:12px;'>${item.tarih}</td>
+                    <td style='padding:10px;'>${item.detay}</td>
+                    <td style='padding:10px;'>${item.isik === 'night' ? '🌙 Gece' : '☀️ Gündüz'}</td>
+                    <td style='padding:10px; font-size:12px;'>${item.koordinat.lat.toFixed(4)}, ${item.koordinat.lng.toFixed(4)}</td>
+                </tr>`;
+            });
+            document.getElementById('admin-list').innerHTML = html + "</table>";
+        } catch (e) { document.getElementById('admin-list').innerHTML = "Hata: Veriler çözülemedi."; }
+    }
+
+    // --- QUIZ MANTIĞI ---
+    let quizBank = [], selectedQuestions = [], currentQIdx = 0, qScore = 0;
     async function startQuiz() {
         const container = document.getElementById('quiz-container');
         try {
             const response = await fetch('sorular.json?v=' + new Date().getTime());
             if (!response.ok) throw new Error("Dosya bulunamadı.");
             const data = await response.json();
-            
             quizBank = data;
             const limit = Math.min(quizBank.length, 20);
             selectedQuestions = quizBank.sort(() => 0.5 - Math.random()).slice(0, limit);
-            
             currentQIdx = 0; qScore = 0;
             document.getElementById('quiz-result').style.display = 'none';
             container.style.display = 'block';
             loadQuestion();
-        } catch (e) {
-            container.innerHTML = `<p style="color:red">Sorular yüklenemedi: ${e.message}</p>`;
-        }
+        } catch (e) { container.innerHTML = `<p style="color:red">Hata: ${e.message}</p>`; }
     }
 
     function loadQuestion() {
-        if (selectedQuestions.length === 0) return;
         const q = selectedQuestions[currentQIdx];
         document.getElementById('quiz-container').innerHTML = `
             <h3>${currentQIdx + 1}. ${q[0]}</h3>
@@ -213,38 +250,14 @@
         document.getElementById('quiz-container').style.display = 'none';
         document.getElementById('quiz-result').style.display = 'block';
         document.getElementById('final-score-title').innerText = `Skor: ${qScore} / ${selectedQuestions.length}`;
-        document.getElementById('final-msg').innerText = qScore > (selectedQuestions.length / 2) ? "Harika! Kültürel miras konusunda bilinçlisiniz." : "Biraz daha çalışarak mirasımızı daha iyi koruyabilirsiniz.";
+        document.getElementById('final-msg').innerText = "Test tamamlandı.";
     }
 
-    // --- NAVİGASYON ---
     function showPage(id) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         if(id === 'report-page') setTimeout(() => map.invalidateSize(), 200);
         if(id === 'quiz-page') startQuiz();
-    }
-
-    // --- ADMIN ---
-    async function checkAdmin() {
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('admin') === 'true') {
-            const pass = prompt("Yönetici Şifresi:");
-            if (pass === "1234") renderAdminView();
-        }
-    }
-
-    async function renderAdminView() {
-        document.body.innerHTML = `<div class="section"><h2>🕵️ Yönetici Paneli</h2><div id="admin-list">Yükleniyor...</div><button class="btn-main" onclick="location.reload()">Çıkış</button></div>`;
-        try {
-            const res = await fetch(DEPO_URL);
-            const data = await res.json();
-            let html = "<table border='1' style='width:100%; border-collapse:collapse;'><tr><th>Tarih</th><th>Detay</th></tr>";
-            data.forEach(row => {
-                const dec = JSON.parse(sifreCoz(row[1]));
-                if(dec) html += `<tr><td>${row[0]}</td><td>${dec.detay}</td></tr>`;
-            });
-            document.getElementById('admin-list').innerHTML = html + "</table>";
-        } catch (e) { document.getElementById('admin-list').innerHTML = "Veri okunamadı."; }
     }
 
     window.onload = checkAdmin;
