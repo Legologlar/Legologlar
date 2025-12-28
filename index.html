@@ -3,41 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kaçak Kazı Bildirim ve Eğitim Portalı | FLL LEGOLOGLAR</title>
+    <title>Kaçak Kazı Bildirim Portalı | FLL LEGOLOGLAR</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
     <style>
         :root {
-            --primary: #00b4d8;
-            --secondary: #03045e;
-            --earth: #935805;
-            --bg: #f1f3f8;
-            --white: #ffffff;
-            --accent: #0096c7;
-            --light-blue: #caf0f8;
+            --primary: #00b4d8; --secondary: #03045e; --earth: #935805;
+            --bg: #f1f3f8; --white: #ffffff; --accent: #0096c7; --light-blue: #caf0f8;
         }
-
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--secondary); }
         .page { display: none; min-height: 100vh; width: 100%; }
         .page.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
         header { background: linear-gradient(135deg, var(--secondary), var(--primary)); color: white; padding: 30px 20px; text-align: center; }
         .section { background: var(--white); border-radius: 20px; padding: 30px; margin: 20px auto; max-width: 850px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        
         .stats-row { display: flex; gap: 15px; margin-bottom: 20px; }
         .stat-card { flex: 1; background: var(--light-blue); padding: 15px; border-radius: 12px; text-align: center; }
         #map { height: 300px; border-radius: 15px; border: 2px solid var(--light-blue); margin: 15px 0; z-index: 1; }
         .trust-panel { border-left: 8px solid #ccc; padding: 10px; background: white; border-radius: 8px; }
-
         input, textarea, select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--light-blue); box-sizing: border-box; margin-bottom: 10px; }
         .btn-main { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        
         .quiz-bridge { margin-top: 30px; text-align: center; border-top: 2px dashed #ccc; padding-top: 20px; }
         .btn-quiz-go { background: var(--earth); color: white; border: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; }
         .options { list-style: none; padding: 0; }
@@ -72,20 +61,19 @@
             <input type="date" id="eventDate">
             <input type="time" id="eventTime">
         </div>
-        <textarea id="rDesc" rows="4" placeholder="Şüpheli faaliyeti detaylıca açıklayın (Kişi sayısı, araç plakası vb.)..."></textarea>
+        <textarea id="rDesc" rows="4" placeholder="Şüpheli faaliyeti detaylıca açıklayın..."></textarea>
         <select id="rLight">
             <option value="day">Gündüz</option>
             <option value="night">Gece (Kritik Risk)</option>
         </select>
 
         <div id="map"></div>
-        <button class="btn-main" onclick="submitReport()">İHBARI SİSTEME KAYDET VE JSON İNDİR</button>
+        <button class="btn-main" onclick="submitReport()">İHBARI GÜVENLİ GÖNDER VE ANALİZ ET</button>
 
         <div class="quiz-bridge">
             <h3>Arkeoloji Uzmanlık Testi</h3>
-            <p>20 Soruda mirası koruma bilginizi ölçün!</p>
             <button class="btn-quiz-go" onclick="showPage('quiz-page')">
-                <i class="fas fa-graduation-cap"></i> 20 Soruluk Quize Başla
+                <i class="fas fa-graduation-cap"></i> Quize Başla
             </button>
         </div>
     </div>
@@ -93,15 +81,11 @@
 
 <div id="quiz-page" class="page">
     <div class="section" style="border-top: 10px solid var(--earth);">
-        <button class="btn-quiz-go" style="background:none; color:var(--earth); margin-bottom:10px;" onclick="showPage('report-page')">← Testi Yarıda Bırak</button>
-        
+        <button class="btn-quiz-go" style="background:none; color:var(--earth);" onclick="showPage('report-page')">← Geri Dön</button>
         <div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
-        <p id="qCountDisplay">Soru: 1 / 20</p>
-
+        <p id="qCountDisplay"></p>
         <div id="quiz-container"></div>
-
         <div id="quiz-result" style="display:none; text-align:center;">
-            <i class="fas fa-trophy" style="font-size: 60px; color: gold;"></i>
             <h2 id="final-score-title"></h2>
             <p id="final-msg"></p>
             <button class="btn-main" style="background:var(--earth)" onclick="location.reload()">Başa Dön</button>
@@ -110,42 +94,12 @@
 </div>
 
 <script>
-    // --- GOOGLE SHEETS BACKEND AYARLARI ---
+    // --- KONFİGÜRASYON ---
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyFcIai4hAuiVG_M3q_vYnEQS5R1LFq14izib1MqoO2vXOe4Zi2IHR5mYuSOlPYEpye/exec";
-    
-    // 1. ADIMDA ALDIĞIN YENİ URL'Yİ BURAYA YAPIŞTIR
     const DEPO_URL = "https://script.google.com/macros/s/AKfycbxww2-ThoWar93P94sxsl_3JxHAY7_RrXjYEfM2i0FVn2LLBozDkkTu6MiU-wCrEQwLtg/exec"; 
-    
-    // Şifreleme Anahtarı (Admin panelinde çözmek için kullanılacak)
     const GIZLI_ANAHTAR = "LegologlarFLL2024";
-    // Sayıyı Google Sheets'ten Çekme (Sync)
 
-    async function syncCount() {
-        if (!BACKEND_URL || BACKEND_URL.includes("BURAYA")) return;
-        try {
-            const response = await fetch(BACKEND_URL);
-            const data = await response.json();
-            document.getElementById('countVal').innerText = data.total;
-        } catch (e) { console.error("Veri çekilemedi."); }
-    }
-    
-    // 20 Saniyede bir otomatik senkronizasyon
-    setInterval(syncCount, 20000);
-    syncCount();
-
-    // --- NAVİGASYON ---
-    function showPage(id) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        if(id === 'report-page') {
-            setTimeout(() => { map.invalidateSize(); }, 200);
-        }
-        if(id === 'quiz-page') {
-            startQuiz();
-        }
-    }
-
-    // --- İHBAR SİSTEMİ ---
+    // --- HARİTA BAŞLATMA ---
     var map = L.map('map').setView([39.0, 35.0], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     var marker = null, selectedLoc = null;
@@ -156,12 +110,8 @@
         marker = L.marker(selectedLoc).addTo(map);
     });
 
-    // Veriyi Şifrele
-    function sifrele(metin) {
-        return CryptoJS.AES.encrypt(metin, GIZLI_ANAHTAR).toString();
-    }
-
-    // Şifreyi Çöz
+    // --- ŞİFRELEME ARAÇLARI ---
+    function sifrele(metin) { return CryptoJS.AES.encrypt(metin, GIZLI_ANAHTAR).toString(); }
     function sifreCoz(sifreliMetin) {
         try {
             const bytes = CryptoJS.AES.decrypt(sifreliMetin, GIZLI_ANAHTAR);
@@ -169,106 +119,48 @@
         } catch (e) { return null; }
     }
 
-    // Admin Panelini Aç (URL'de ?admin=true varsa çalışır)
-    async function checkAdmin() {
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('admin') === 'true') {
-            const pass = prompt("Yönetici Şifresi:");
-            if (pass === "1234") { 
-                renderAdminView();
-            }
-        }
+    // --- ANA FONKSİYONLAR ---
+    async function syncCount() {
+        try {
+            const response = await fetch(BACKEND_URL);
+            const data = await response.json();
+            document.getElementById('countVal').innerText = data.total;
+        } catch (e) { console.error("Sayaç güncellenemedi."); }
     }
-    window.onload = checkAdmin;
+    setInterval(syncCount, 30000);
+    syncCount();
+
     async function submitReport() {
         const desc = document.getElementById('rDesc').value;
         const light = document.getElementById('rLight').value;
 
-    // 1. Güvenlik Kontrolü
-        if(!selectedLoc || desc.length < 5) { 
-            alert("Lütfen haritadan konum seçin ve açıklama yazın!"); 
-            return; 
-        }
+        if(!selectedLoc || desc.length < 5) { alert("Konum ve detaylı açıklama gerekli!"); return; }
 
-    // 2. Veriyi Hazırla (Ham hali)
-         const rawReportData = {
-            detay: desc,
-            isik: light,
-            koordinat: selectedLoc,
-            tarih: new Date().toLocaleString()
-        };
-
-    // 3. Veriyi Şifrele (AES-256)
-    // Bu işlemden sonra veri anlamsız bir metne dönüşür
-        const securePackage = CryptoJS.AES.encrypt(JSON.stringify(rawReportData), GIZLI_ANAHTAR).toString();
+        const rawData = { detay: desc, isik: light, koordinat: selectedLoc, tarih: new Date().toLocaleString() };
+        const securePackage = sifrele(JSON.stringify(rawData));
 
         try {
-        // 4. Şifreli Veriyi Gizli Tabloya (Depo) Gönder
-            fetch(DEPO_URL, { 
-            method: 'POST', 
-            mode: 'no-cors', 
-            body: JSON.stringify({ secureData: securePackage }) 
-         });
-
-        // 5. Herkese Açık Sayaç Tablosuna Sinyal Gönder (Sadece sayıyı artırır)
+            // Şifreli Veriyi Gönder
+            fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ secureData: securePackage }) });
+            // Sayacı Artır
             fetch(BACKEND_URL, { method: 'POST', mode: 'no-cors' });
-        
-        // 6. Ekranda Anlık Geri Bildirim
+
             let current = parseInt(document.getElementById('countVal').innerText);
-            let newCount = current + 1;
-            document.getElementById('countVal').innerText = newCount;
+            document.getElementById('countVal').innerText = current + 1;
 
-        // Senin mevcut analiz ve indirme fonksiyonun kalsın
-        finalizeProcess(newCount, desc, light);
-        
-        alert("İhbarınız uçtan uca şifrelenerek yönetici paneline iletildi!");
-
-    } catch (e) {
-        console.error("Hata:", e);
-        alert("Bağlantı hatası oluştu.");
+            finalizeProcess(current + 1, desc, light);
+            alert("İhbar şifrelenerek merkeze iletildi!");
+        } catch (e) { alert("Bir hata oluştu."); }
     }
-}
-
-        if(!selectedLoc || desc.length < 5) { 
-            alert("Lütfen haritadan konum seçin ve açıklama yazın!"); 
-            return; 
-        }
-
-        // Google Sheets'e POST isteği (Sayıyı artırma)
-        try {
-            fetch(BACKEND_URL, { method: 'POST', mode: 'no-cors' });
-            
-            // Ekranda sayıyı anlık 1 artır (Kullanıcıya hız hissi verir)
-            let current = parseInt(document.getElementById('countVal').innerText);
-            let newCount = current + 1;
-            document.getElementById('countVal').innerText = newCount;
-
-            // Risk Analizi ve İndirme Süreci
-            finalizeProcess(newCount, desc, light);
-            
-        } catch (e) {
-            alert("Bağlantı hatası oluştu, ancak yerel kayıt yapılıyor.");
-        }
-    
 
     function finalizeProcess(newId, desc, light) {
-        let score = Math.min(desc.length / 2, 60) + (light === "night" ? 40 : 20);
-        score = Math.floor(Math.min(score, 100));
+        let score = Math.floor(Math.min(Math.min(desc.length / 2, 60) + (light === "night" ? 40 : 20), 100));
         let priority = Math.ceil(score / 20);
-
         document.getElementById('scoreDisplay').innerText = score;
         document.getElementById('priorityText').innerText = "Öncelik: " + priority;
         document.getElementById('trustBorder').style.borderLeftColor = score > 75 ? "red" : "orange";
 
-        const data = {
-            id: newId,
-            detay: desc,
-            guven: score,
-            oncelik: priority,
-            koordinat: selectedLoc,
-            tarih: new Date().toLocaleString()
-        };
-
+        const data = { id: newId, detay: desc, guven: score, koordinat: selectedLoc, tarih: new Date().toLocaleString() };
         const blob = new Blob([JSON.stringify(data, null, 2)], {type : 'application/json'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
@@ -276,94 +168,85 @@
         a.click();
     }
 
-    // --- DINAMIK QUIZ (JSON'DAN OKUMA) ---
-    let quizBank = [];
-    let selectedQuestions = [];
-    let currentQIdx = 0;
-    let score = 0;
-
-    async function startQuiz() {
-        try {
-            const response = await fetch('sorular.json');
-            if (!response.ok) throw new Error('JSON dosyası bulunamadı!');
-            const data = await response.json();
-            
-            quizBank = data.sort(() => 0.5 - Math.random());
-            selectedQuestions = quizBank.slice(0, 20);
-            currentQIdx = 0;
-            score = 0;
-            
-            document.getElementById('quiz-container').style.display = 'block';
-            document.getElementById('quiz-result').style.display = 'none';
-            loadQuestion();
-        } catch (error) {
-            console.error(error);
-            document.getElementById('quiz-container').innerHTML = "<h3>Hata: sorular.json dosyası yüklenemedi.</h3>";
+    // --- ADMIN PANELİ ---
+    async function checkAdmin() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('admin') === 'true') {
+            const pass = prompt("Yönetici Şifresi:");
+            if (pass === "1234") renderAdminView();
+            else { alert("Yetkisiz Giriş!"); window.location.href="index.html"; }
         }
     }
 
-    function loadQuestion() {
-        const container = document.getElementById('quiz-container');
-        const qData = selectedQuestions[currentQIdx];
-        
-        container.innerHTML = `
-            <div class="question-block active">
-                <h3>${currentQIdx + 1}. ${qData[0]}</h3>
-                <ul class="options">
-                    <li onclick="handleAnswer(0)">A) ${qData[1]}</li>
-                    <li onclick="handleAnswer(1)">B) ${qData[2]}</li>
-                    <li onclick="handleAnswer(2)">C) ${qData[3]}</li>
-                </ul>
-            </div>
-        `;
-        
-        document.getElementById('qCountDisplay').innerText = `Soru: ${currentQIdx + 1} / ${selectedQuestions.length}`;
-        document.getElementById('progress').style.width = (currentQIdx / selectedQuestions.length * 100) + "%";
+    async function renderAdminView() {
+        document.body.innerHTML = `<div class="section">
+            <h2>🕵️ Yönetici Paneli (Şifre Çözülmüş)</h2>
+            <div id="admin-list">Yükleniyor...</div>
+            <button class="btn-main" onclick="location.reload()" style="background:var(--secondary)">Çıkış</button>
+        </div>`;
+        try {
+            const res = await fetch(DEPO_URL);
+            const data = await res.json();
+            let html = "<table style='width:100%; border-collapse:collapse;'><tr><th>Tarih</th><th>İhbar Detayı</th></tr>";
+            data.forEach(row => {
+                const cozulen = JSON.parse(sifreCoz(row[1]));
+                if(cozulen) {
+                    html += `<tr style='border-bottom:1px solid #ddd; padding:10px;'>
+                        <td>${new Date(row[0]).toLocaleDateString()}</td>
+                        <td>${cozulen.detay}<br><small>${cozulen.koordinat.lat}, ${cozulen.koordinat.lng}</small></td></tr>`;
+                }
+            });
+            document.getElementById('admin-list').innerHTML = html + "</table>";
+        } catch (e) { document.getElementById('admin-list').innerHTML = "Veri okuma hatası!"; }
     }
 
-    function handleAnswer(selectedIdx) {
-        if(selectedIdx === selectedQuestions[currentQIdx][4]) { score++; }
+    // --- QUIZ MANTIĞI ---
+    let quizBank = [], selectedQuestions = [], currentQIdx = 0, qScore = 0;
+    async function startQuiz() {
+        try {
+            const response = await fetch('sorular.json');
+            const data = await response.json();
+            selectedQuestions = data.sort(() => 0.5 - Math.random()).slice(0, 20);
+            currentQIdx = 0; qScore = 0;
+            document.getElementById('quiz-container').style.display = 'block';
+            document.getElementById('quiz-result').style.display = 'none';
+            loadQuestion();
+        } catch (e) { document.getElementById('quiz-container').innerHTML = "Sorular yüklenemedi."; }
+    }
+
+    function loadQuestion() {
+        const q = selectedQuestions[currentQIdx];
+        document.getElementById('quiz-container').innerHTML = `
+            <h3>${currentQIdx + 1}. ${q[0]}</h3>
+            <ul class="options">
+                <li onclick="handleAnswer(0)">A) ${q[1]}</li>
+                <li onclick="handleAnswer(1)">B) ${q[2]}</li>
+                <li onclick="handleAnswer(2)">C) ${q[3]}</li>
+            </ul>`;
+        document.getElementById('qCountDisplay').innerText = `Soru: ${currentQIdx + 1} / 20`;
+        document.getElementById('progress').style.width = (currentQIdx / 20 * 100) + "%";
+    }
+
+    function handleAnswer(idx) {
+        if(idx === selectedQuestions[currentQIdx][4]) qScore++;
         currentQIdx++;
-        if(currentQIdx < selectedQuestions.length) { loadQuestion(); } else { showResult(); }
+        if(currentQIdx < 20) loadQuestion(); else showResult();
     }
 
     function showResult() {
         document.getElementById('quiz-container').style.display = 'none';
         document.getElementById('quiz-result').style.display = 'block';
-        document.getElementById('progress').style.width = "100%";
-        document.getElementById('final-score-title').innerText = `Skorunuz: ${score} / ${selectedQuestions.length}`;
-        let msg = score >= 15 ? "Mükemmel! Bir Miras Koruyucusu Uzmanısınız." : "Güzel deneme! Daha fazla bilgi için araştırmaya devam edin.";
-        document.getElementById('final-msg').innerText = msg;
-    }
-async function renderAdminView() {
-        document.body.innerHTML = `<div class="section">
-            <h2>🕵️ Şifreli İhbar Yönetim Paneli</h2>
-            <div id="admin-list">Veriler şifreli kanaldan çekiliyor ve çözülüyor...</div>
-            <button class="btn-main" onclick="location.href='index.html'" style="margin-top:20px; background:var(--secondary)">Çıkış Yap</button>
-        </div>`;
-
-        try {
-            const res = await fetch(DEPO_URL);
-            const data = await res.json();
-            let html = "<table style='width:100%; border-collapse:collapse;'>";
-            html += "<tr style='background:#eee'><th>Tarih</th><th>İhbar Detayı (Çözülmüş)</th></tr>";
-
-            data.forEach(row => {
-                const cozulenMetin = sifreCoz(row[1]);
-                if(cozulenMetin) {
-                    const obj = JSON.parse(cozulenMetin);
-                    html += `<tr style='border-bottom:1px solid #ddd'>
-                        <td>${new Date(row[0]).toLocaleString()}</td>
-                        <td>${obj.detay}<br><small>Konum: ${obj.koordinat.lat}, ${obj.koordinat.lng}</small></td>
-                    </tr>`;
-                }
-            });
-            document.getElementById('admin-list').innerHTML = html + "</table>";
-        } catch (e) {
-            document.getElementById('admin-list').innerHTML = "Veri çekme hatası!";
-        }
+        document.getElementById('final-score-title').innerText = `Skor: ${qScore} / 20`;
     }
 
+    function showPage(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(id === 'report-page') setTimeout(() => map.invalidateSize(), 200);
+        if(id === 'quiz-page') startQuiz();
+    }
+
+    window.onload = checkAdmin;
 </script>
 </body>
 </html>
