@@ -9,11 +9,13 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
     <style>
         :root {
             --primary: #00b4d8;
             --secondary: #03045e;
-            --earth: #7209b7;
+            --earth: #935805;
             --bg: #f1f3f8;
             --white: #ffffff;
             --accent: #0096c7;
@@ -110,8 +112,14 @@
 <script>
     // --- GOOGLE SHEETS BACKEND AYARLARI ---
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyFcIai4hAuiVG_M3q_vYnEQS5R1LFq14izib1MqoO2vXOe4Zi2IHR5mYuSOlPYEpye/exec";
-
+    
+    // 1. ADIMDA ALDIĞIN YENİ URL'Yİ BURAYA YAPIŞTIR
+    const DEPO_URL = "BURAYA_YENI_ALDIĞIN_URL_GELECEK"; 
+    
+    // Şifreleme Anahtarı (Admin panelinde çözmek için kullanılacak)
+    const GIZLI_ANAHTAR = "LegologlarFLL2024";
     // Sayıyı Google Sheets'ten Çekme (Sync)
+
     async function syncCount() {
         if (!BACKEND_URL || BACKEND_URL.includes("BURAYA")) return;
         try {
@@ -148,9 +156,78 @@
         marker = L.marker(selectedLoc).addTo(map);
     });
 
+    // Veriyi Şifrele
+    function sifrele(metin) {
+        return CryptoJS.AES.encrypt(metin, GIZLI_ANAHTAR).toString();
+    }
+
+    // Şifreyi Çöz
+    function sifreCoz(sifreliMetin) {
+        try {
+            const bytes = CryptoJS.AES.decrypt(sifreliMetin, GIZLI_ANAHTAR);
+            return bytes.toString(CryptoJS.enc.Utf8);
+        } catch (e) { return null; }
+    }
+
+    // Admin Panelini Aç (URL'de ?admin=true varsa çalışır)
+    async function checkAdmin() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('admin') === 'true') {
+            const pass = prompt("Yönetici Şifresi:");
+            if (pass === "1234") { 
+                renderAdminView();
+            }
+        }
+    }
+    window.onload = checkAdmin;
     async function submitReport() {
         const desc = document.getElementById('rDesc').value;
         const light = document.getElementById('rLight').value;
+
+    // 1. Güvenlik Kontrolü
+        if(!selectedLoc || desc.length < 5) { 
+            alert("Lütfen haritadan konum seçin ve açıklama yazın!"); 
+            return; 
+        }
+
+    // 2. Veriyi Hazırla (Ham hali)
+         const rawReportData = {
+            detay: desc,
+            isik: light,
+            koordinat: selectedLoc,
+            tarih: new Date().toLocaleString()
+        };
+
+    // 3. Veriyi Şifrele (AES-256)
+    // Bu işlemden sonra veri anlamsız bir metne dönüşür
+        const securePackage = CryptoJS.AES.encrypt(JSON.stringify(rawReportData), GIZLI_ANAHTAR).toString();
+
+        try {
+        // 4. Şifreli Veriyi Gizli Tabloya (Depo) Gönder
+            fetch(DEPO_URL, { 
+            method: 'POST', 
+            mode: 'no-cors', 
+            body: JSON.stringify({ secureData: securePackage }) 
+         });
+
+        // 5. Herkese Açık Sayaç Tablosuna Sinyal Gönder (Sadece sayıyı artırır)
+            fetch(BACKEND_URL, { method: 'POST', mode: 'no-cors' });
+        
+        // 6. Ekranda Anlık Geri Bildirim
+            let current = parseInt(document.getElementById('countVal').innerText);
+            let newCount = current + 1;
+            document.getElementById('countVal').innerText = newCount;
+
+        // Senin mevcut analiz ve indirme fonksiyonun kalsın
+        finalizeProcess(newCount, desc, light);
+        
+        alert("İhbarınız uçtan uca şifrelenerek yönetici paneline iletildi!");
+
+    } catch (e) {
+        console.error("Hata:", e);
+        alert("Bağlantı hatası oluştu.");
+    }
+}
 
         if(!selectedLoc || desc.length < 5) { 
             alert("Lütfen haritadan konum seçin ve açıklama yazın!"); 
@@ -172,7 +249,7 @@
         } catch (e) {
             alert("Bağlantı hatası oluştu, ancak yerel kayıt yapılıyor.");
         }
-    }
+    
 
     function finalizeProcess(newId, desc, light) {
         let score = Math.min(desc.length / 2, 60) + (light === "night" ? 40 : 20);
@@ -258,6 +335,35 @@
         let msg = score >= 15 ? "Mükemmel! Bir Miras Koruyucusu Uzmanısınız." : "Güzel deneme! Daha fazla bilgi için araştırmaya devam edin.";
         document.getElementById('final-msg').innerText = msg;
     }
+async function renderAdminView() {
+        document.body.innerHTML = `<div class="section">
+            <h2>🕵️ Şifreli İhbar Yönetim Paneli</h2>
+            <div id="admin-list">Veriler şifreli kanaldan çekiliyor ve çözülüyor...</div>
+            <button class="btn-main" onclick="location.href='index.html'" style="margin-top:20px; background:var(--secondary)">Çıkış Yap</button>
+        </div>`;
+
+        try {
+            const res = await fetch(DEPO_URL);
+            const data = await res.json();
+            let html = "<table style='width:100%; border-collapse:collapse;'>";
+            html += "<tr style='background:#eee'><th>Tarih</th><th>İhbar Detayı (Çözülmüş)</th></tr>";
+
+            data.forEach(row => {
+                const cozulenMetin = sifreCoz(row[1]);
+                if(cozulenMetin) {
+                    const obj = JSON.parse(cozulenMetin);
+                    html += `<tr style='border-bottom:1px solid #ddd'>
+                        <td>${new Date(row[0]).toLocaleString()}</td>
+                        <td>${obj.detay}<br><small>Konum: ${obj.koordinat.lat}, ${obj.koordinat.lng}</small></td>
+                    </tr>`;
+                }
+            });
+            document.getElementById('admin-list').innerHTML = html + "</table>";
+        } catch (e) {
+            document.getElementById('admin-list').innerHTML = "Veri çekme hatası!";
+        }
+    }
+
 </script>
 </body>
 </html>
