@@ -38,17 +38,26 @@
         
         .quiz-bridge { margin-top: 30px; text-align: center; border-top: 2px dashed #ccc; padding-top: 20px; }
         .btn-quiz-go { background: var(--earth); color: white; border: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
-       /* Mobil Çakışma Önleyici */
+         /* Mobil Çakışma ve Geometri Düzenlemesi */
     @media (max-width: 600px) {
-        .grid-container {
+    /* Yan yana durmayı sağlayan grid'i iptal edip alt alta diziyoruz */
+    .section div[style*="display: grid"] {
         display: flex !important;
-        flex-direction: column !important; /* Yan yana durmayı iptal eder, alt alta dizer */
-        gap: 15px !important;
+        flex-direction: column !important;
+        gap: 15px !important; /* Kutular arasına dikey boşluk ekler */
     }
-    
-    input[type="date"], input[type="time"] {
-        min-height: 45px; /* Parmakla basımı kolaylaştırır */
-        font-size: 16px;   /* Mobilde zoom yapmasını engeller */
+
+    /* Tarih ve Saat kutularının genişliğini tam yapıyoruz */
+    input[type="date"], 
+    input[type="time"] {
+        width: 100% !important;
+        min-height: 45px;
+        margin-bottom: 5px;
+    }
+
+    /* Başlıkların kutuların hemen üstünde durmasını sağlıyoruz */
+    .form-group label {
+        margin-top: 10px;
     }
 }
     </style>
