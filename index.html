@@ -205,32 +205,31 @@
     }
 
     async function renderAdminView() {
-        // Arayüzü Yönetici Paneline dönüştür
         document.getElementById('main-content').innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <h2>🕵️ Yönetici Kontrol Paneli</h2>
                 <button class="btn-main" onclick="location.reload()" style="width:120px; margin-top:0; background:var(--secondary)">Çıkış</button>
             </div>
-            <div id="admin-list" style="overflow-x:auto;">Veriler yükleniyor...</div>`;
+            <div id="admin-list" style="overflow-x:auto;">Veriler analiz ediliyor...</div>`;
         
         try {
             const res = await fetch(DEPO_URL);
             const data = await res.json();
             
-            if (!data || data.length === 0) {
-                document.getElementById('admin-list').innerHTML = "Henüz ihbar bulunmuyor.";
-                return;
-            }
-
             let html = "<table style='width:100%; border-collapse:collapse; background:white; font-size:13px;'>";
             html += "<tr style='background:#eee; text-align:left;'><th>Güven</th><th>İhbarcı</th><th>Zaman</th><th>İşlem</th></tr>";
             
             let count = 0;
             data.forEach((row, index) => {
-                // Sütun yapısı: [0]Tarih, [1]Parça1, [2]Parça2, [3]Parça3, [4]Parça4
-                const fullEncryptedData = (row[1] || "") + (row[2] || "") + (row[3] || "") + (row[4] || "");
+                // VERİ BİRLEŞTİRME: row[1] ile row[4] arasını (veya varsa row[0] sonrası dolu alanları) birleştirir
+                let fullEncryptedData = "";
+                // Google Sheets'te A sütunu tarih ise veriler 1. indisten başlar. 
+                // Biz 0'dan 10'a kadar tüm hücreleri güvenli bir şekilde tarıyoruz.
+                for(let i=1; i < row.length; i++) {
+                    if(row[i]) fullEncryptedData += String(row[i]).trim();
+                }
                 
-                if (fullEncryptedData.trim().length > 0) {
+                if (fullEncryptedData.length > 30) { 
                     const decStr = sifreCoz(fullEncryptedData);
                     if(decStr) {
                         try {
@@ -244,20 +243,15 @@
                                 <td style='padding:12px;'><button onclick="openDetail(${index})" style="background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer;">İNCELE</button></td>
                             </tr>`;
                             count++;
-                        } catch (parseErr) { console.log("Satır ayrıştırma hatası index: " + index); }
+                        } catch (e) { console.error("JSON Error at index " + index); }
                     }
                 }
             });
 
-            if(count === 0) {
-                document.getElementById('admin-list').innerHTML = "Okunabilir veri bulunamadı.";
-            } else {
-                document.getElementById('admin-list').innerHTML = html + "</table>";
-            }
+            document.getElementById('admin-list').innerHTML = count > 0 ? html + "</table>" : "Görüntülenecek ihbar verisi bulunamadı.";
 
         } catch (e) { 
-            console.error(e);
-            document.getElementById('admin-list').innerHTML = "Veriler işlenirken hata oluştu. Lütfen DEPO_URL bağlantısını kontrol edin."; 
+            document.getElementById('admin-list').innerHTML = "Hata: Verilere ulaşılamadı. Lütfen internet bağlantısını ve Apps Script izinlerini kontrol edin."; 
         }
     }
 
@@ -284,8 +278,8 @@
     async function deleteReport(index) {
         if(confirm("Bu ihbarı silmek istediğinize emin misiniz?")) {
             fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: index }) });
-            alert("Silme talebi iletildi. Liste güncelleniyor...");
-            setTimeout(() => location.reload(), 1000);
+            alert("Silme talebi iletildi.");
+            location.reload();
         }
     }
 
