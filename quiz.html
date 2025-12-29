@@ -4,181 +4,85 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arkeoloji Uzmanlık Testi | FLL LEGOLOGLAR</title>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
-
     <style>
         :root {
             --primary: #00b4d8; --secondary: #03045e; --earth: #935805;
             --bg: #f1f3f8; --white: #ffffff; --accent: #0096c7; --light-blue: #caf0f8;
         }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--secondary); display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-        
-        .quiz-container { background: var(--white); border-radius: 20px; padding: 40px; width: 90%; max-width: 650px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border-top: 10px solid var(--earth); }
-        
-        header { text-align: center; margin-bottom: 30px; }
-        h1 { color: var(--secondary); margin-bottom: 5px; }
-        
-        .progress-bar { height: 12px; background: #eee; border-radius: 6px; margin: 20px 0; overflow: hidden; }
+        .quiz-container { background: var(--white); border-radius: 20px; padding: 30px; width: 90%; max-width: 650px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border-top: 10px solid var(--earth); position: relative; }
+        header { text-align: center; margin-bottom: 20px; }
+        .progress-bar { height: 10px; background: #eee; border-radius: 5px; margin: 15px 0; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--earth); width: 0%; transition: 0.4s; }
-        
-        #question-text { font-size: 20px; font-weight: 600; margin-bottom: 25px; line-height: 1.4; }
-        
         .options { list-style: none; padding: 0; }
-        .options li { 
-            background: #f8f9fa; 
-            padding: 18px; 
-            margin: 12px 0; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            border: 2px solid #eee; 
-            transition: 0.3s; 
-            font-weight: 500;
-        }
-        .options li:hover { background: var(--light-blue); border-color: var(--primary); transform: translateX(5px); }
-        .options li.correct { background: #d4edda; border-color: #28a745; color: #155724; }
-        .options li.wrong { background: #f8d7da; border-color: #dc3545; color: #721c24; }
-
-        .btn-action { 
-            background: var(--secondary); 
-            color: white; 
-            border: none; 
-            padding: 15px 30px; 
-            border-radius: 12px; 
-            font-size: 16px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 20px;
-        }
-
-        #result-screen { text-align: center; display: none; }
-        .score-circle { 
-            width: 120px; height: 120px; border-radius: 50%; 
-            background: var(--earth); color: white; 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 32px; font-weight: bold; margin: 20px auto; 
-        }
+        .options li { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 12px; cursor: pointer; border: 2px solid #eee; transition: 0.2s; font-weight: 500; }
+        .options li:hover { background: var(--light-blue); border-color: var(--primary); }
+        .btn-action { background: var(--secondary); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; }
+        .back-link { text-decoration: none; color: var(--earth); font-weight: bold; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; transition: 0.3s; }
+        .back-link:hover { opacity: 0.7; }
     </style>
 </head>
 <body>
 
 <div class="quiz-container">
+    <a href="index.html" class="back-link">
+        <i class="fas fa-chevron-left"></i> Form Sayfasına Geri Dön
+    </a>
+
     <div id="quiz-screen">
         <header>
             <h1>🏛️ Uzmanlık Testi</h1>
-            <p id="q-counter">Soru yükleniyor...</p>
+            <p id="q-counter">Yükleniyor...</p>
             <div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
         </header>
-
-        <div id="question-text">Sorular hazırlanıyor, lütfen bekleyin...</div>
+        <div id="question-text" style="font-size: 18px; font-weight: bold; margin-bottom: 20px;"></div>
         <ul id="options-list" class="options"></ul>
     </div>
 
-    <div id="result-screen">
-        <i class="fas fa-trophy" style="font-size: 60px; color: #f1c40f;"></i>
+    <div id="result-screen" style="display:none; text-align:center;">
         <h2>Test Tamamlandı!</h2>
-        <div class="score-circle" id="final-score">0/0</div>
-        <p id="result-text"></p>
-        <div style="display: flex; gap: 10px; justify-content: center;">
-            <button onclick="location.reload()" class="btn-action" style="background: var(--earth);">Tekrar Çöz</button>
-            <a href="index.html" class="btn-action">Portale Dön</a>
-        </div>
+        <div id="final-score" style="font-size: 40px; font-weight: bold; color: var(--earth); margin: 20px 0;"></div>
+        <p id="result-text" style="margin-bottom: 20px;"></p>
+        <a href="index.html" class="btn-action">İhbar Sayfasına Dön</a>
     </div>
 </div>
 
 <script>
-    let quizBank = [];
-    let selectedQuestions = [];
-    let currentIdx = 0;
-    let score = 0;
-    let canClick = true;
-
+    // Önceki quiz script'inin aynısı burada devam edecek...
+    let quizBank = []; let selectedQuestions = []; let currentIdx = 0; let score = 0;
     async function initQuiz() {
         try {
-            const response = await fetch('sorular.json?v=' + new Date().getTime());
-            if (!response.ok) throw new Error("sorular.json dosyası bulunamadı!");
-            
+            const response = await fetch('sorular.json');
             quizBank = await response.json();
-            
-            // Rastgele 20 soru seç (veya dosyadaki toplam soru kadar)
-            const limit = Math.min(quizBank.length, 20);
-            selectedQuestions = quizBank.sort(() => 0.5 - Math.random()).slice(0, limit);
-            
+            selectedQuestions = quizBank.sort(() => 0.5 - Math.random()).slice(0, 20);
             showQuestion();
-        } catch (e) {
-            document.getElementById('question-text').innerHTML = 
-                `<span style="color:red">Hata: ${e.message}<br><small>JSON formatını ve dosya adını kontrol edin.</small></span>`;
-        }
+        } catch (e) { document.getElementById('question-text').innerText = "Hata: Sorular yüklenemedi."; }
     }
-
     function showQuestion() {
-        canClick = true;
         const q = selectedQuestions[currentIdx];
-        const total = selectedQuestions.length;
-
-        // UI Güncelle
-        document.getElementById('q-counter').innerText = `Soru: ${currentIdx + 1} / ${total}`;
-        document.getElementById('progress').style.width = ((currentIdx) / total * 100) + "%";
+        document.getElementById('q-counter').innerText = `Soru: ${currentIdx+1}/${selectedQuestions.length}`;
+        document.getElementById('progress').style.width = (currentIdx/selectedQuestions.length*100) + "%";
         document.getElementById('question-text').innerText = q[0];
-
         const list = document.getElementById('options-list');
         list.innerHTML = "";
-
-        // Şıkları oluştur (A, B, C)
-        for (let i = 1; i <= 3; i++) {
+        for(let i=1; i<=3; i++) {
             const li = document.createElement('li');
-            li.innerText = (i === 1 ? "A) " : i === 2 ? "B) " : "C) ") + q[i];
-            li.onclick = () => checkAnswer(i - 1, q[4], li);
+            li.innerText = q[i];
+            li.onclick = () => {
+                if(i-1 === q[4]) score++;
+                currentIdx++;
+                if(currentIdx < selectedQuestions.length) showQuestion(); else showResult();
+            };
             list.appendChild(li);
         }
     }
-
-    function checkAnswer(chosenIdx, correctIdx, element) {
-        if (!canClick) return;
-        canClick = false;
-
-        const listItems = document.querySelectorAll('.options li');
-        
-        if (chosenIdx === correctIdx) {
-            score++;
-            element.classList.add('correct');
-        } else {
-            element.classList.add('wrong');
-            listItems[correctIdx].classList.add('correct'); // Doğru olanı göster
-        }
-
-        // 1.5 saniye bekle ve sonraki soruya geç
-        setTimeout(() => {
-            currentIdx++;
-            if (currentIdx < selectedQuestions.length) {
-                showQuestion();
-            } else {
-                showFinalResult();
-            }
-        }, 1200);
+    function showResult() {
+        document.getElementById('quiz-screen').style.display='none';
+        document.getElementById('result-screen').style.display='block';
+        document.getElementById('final-score').innerText = `${score} / ${selectedQuestions.length}`;
     }
-
-    function showFinalResult() {
-        document.getElementById('quiz-screen').style.display = 'none';
-        document.getElementById('result-screen').style.display = 'block';
-        
-        const total = selectedQuestions.length;
-        document.getElementById('final-score').innerText = `${score} / ${total}`;
-        
-        let msg = "";
-        const percent = (score / total) * 100;
-        if (percent >= 80) msg = "Mükemmel! Gerçek bir Arkeoloji uzmanısınız.";
-        else if (percent >= 50) msg = "Gayet iyi! Kültürel mirasa duyarlısınız.";
-        else msg = "Daha fazla öğrenerek mirasımızı korumamıza yardımcı olabilirsiniz.";
-        
-        document.getElementById('result-text').innerText = msg;
-    }
-
-    // Testi başlat
     initQuiz();
 </script>
-
 </body>
 </html>
