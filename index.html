@@ -16,44 +16,68 @@
             --bg: #f1f3f8; --white: #ffffff; --accent: #0096c7; --light-blue: #caf0f8;
         }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--secondary); }
-        .page { display: none; min-height: 100vh; width: 100%; }
-        .page.active { display: block; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .page { min-height: 100vh; width: 100%; }
         header { background: linear-gradient(135deg, var(--secondary), var(--primary)); color: white; padding: 30px 20px; text-align: center; }
         .section { background: var(--white); border-radius: 20px; padding: 30px; margin: 20px auto; max-width: 850px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .stats-row { display: flex; gap: 15px; margin-bottom: 20px; }
-        .stat-card { flex: 1; background: var(--light-blue); padding: 15px; border-radius: 12px; text-align: center; }
-        #map { height: 300px; border-radius: 15px; border: 2px solid var(--light-blue); margin: 15px 0; z-index: 1; }
-        .trust-panel { border-left: 8px solid #ccc; padding: 10px; background: white; border-radius: 8px; }
-        input, textarea, select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--light-blue); box-sizing: border-box; margin-bottom: 10px; }
-        .btn-main { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        
+        /* İstatistik Kartı */
+        .stat-card { background: var(--light-blue); padding: 15px; border-radius: 12px; text-align: center; font-weight: bold; margin-bottom: 20px; }
+        
+        /* Harita Ayarı */
+        #map { height: 350px; border-radius: 15px; border: 2px solid var(--light-blue); margin: 10px 0 20px 0; z-index: 1; width: 100%; }
+        
+        /* Form Elemanları - Dikey Hizalama */
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        label { font-weight: bold; margin-bottom: 8px; display: block; }
+        input, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--light-blue); box-sizing: border-box; font-family: inherit; font-size: 14px; }
+        
+        .btn-main { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-main:hover { background: var(--secondary); }
+        
         .quiz-bridge { margin-top: 30px; text-align: center; border-top: 2px dashed #ccc; padding-top: 20px; }
-        .btn-quiz-go { background: var(--earth); color: white; border: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; text-decoration: none; justify-content: center; }
+        .btn-quiz-go { background: var(--earth); color: white; border: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
     </style>
 </head>
 <body>
 
-<div id="report-page" class="page active">
+<div id="report-page" class="page">
     <header>
         <h1>🏛️ Arkeolojik Miras Koruma Portalı</h1>
         <p>İhbar Sistemi & Uzmanlık Analizi</p>
     </header>
 
     <div class="section">
-        <div class="stats-row">
-            <div class="stat-card"><span id="countVal" style="font-size:20px; font-weight:bold;">0</span><br>Kayıtlı İhbar</div>
-            
-
-        <label>İhbarcı Bilgisi</label>
-        <input type="text" id="rName" placeholder="Ad Soyad (Anonim için boş bırakın)">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <input type="date" id="eventDate">
-            <input type="time" id="eventTime">
+        <div class="stat-card">
+            Kayıtlı İhbar Sayısı: <span id="countVal">0</span>
         </div>
-        <textarea id="rDesc" rows="4" placeholder="Şüpheli faaliyeti detaylıca açıklayın..."></textarea>
 
-        <div id="map"></div>
-        <button class="btn-main" onclick="submitReport()">İHBARI GÖNDER</button>
+        <div class="form-group">
+            <label>İhbarcı Bilgisi</label>
+            <input type="text" id="rName" placeholder="Ad Soyad (Anonim için boş bırakın)">
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Olay Tarihi</label>
+                <input type="date" id="eventDate">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Olay Saati</label>
+                <input type="time" id="eventTime">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Olay Detayı</label>
+            <textarea id="rDesc" rows="5" placeholder="Şüpheli faaliyeti detaylıca açıklayın..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Olay Konumu (Haritadan İşaretleyin)</label>
+            <div id="map"></div>
+        </div>
+        
+        <button class="btn-main" onclick="submitReport()">İHBARI GÜVENLİ GÖNDER</button>
 
         <div class="quiz-bridge">
             <h3>Arkeoloji Uzmanlık Testi</h3>
@@ -65,12 +89,10 @@
 </div>
 
 <script>
-    // --- KONFİGÜRASYON ---
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyFcIai4hAuiVG_M3q_vYnEQS5R1LFq14izib1MqoO2vXOe4Zi2IHR5mYuSOlPYEpye/exec";
     const DEPO_URL = "https://script.google.com/macros/s/AKfycbxww2-ThoWar93P94sxsl_3JxHAY7_RrXjYEfM2i0FVn2LLBozDkkTu6MiU-wCrEQwLtg/exec"; 
     const GIZLI_ANAHTAR = "LegologlarFLL2024";
 
-    // --- HARİTA BAŞLATMA ---
     var map = L.map('map').setView([39.0, 35.0], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     var marker = null, selectedLoc = null;
@@ -81,8 +103,7 @@
         marker = L.marker(selectedLoc).addTo(map);
     });
 
-    // --- ŞİFRELEME ARAÇLARI ---
-    function sifrele(metin) { return CryptoJS.AES.encrypt(metin, GIZVI_ANAHTAR).toString(); }
+    function sifrele(metin) { return CryptoJS.AES.encrypt(metin, GIZLI_ANAHTAR).toString(); }
     function sifreCoz(sifreliMetin) {
         try {
             const bytes = CryptoJS.AES.decrypt(sifreliMetin, GIZLI_ANAHTAR);
@@ -90,95 +111,8 @@
         } catch (e) { return null; }
     }
 
-    // --- ANA FONKSİYONLAR ---
     async function syncCount() {
         try {
             const response = await fetch(BACKEND_URL);
             const data = await response.json();
-            document.getElementById('countVal').innerText = data.total;
-        } catch (e) { console.error("Sayaç güncellenemedi."); }
-    }
-    setInterval(syncCount, 30000);
-    syncCount();
-
-    async function submitReport() {
-        const desc = document.getElementById('rDesc').value;
-        const light = document.getElementById('rLight').value;
-        if(!selectedLoc || desc.length < 5) { alert("Konum ve detaylı açıklama gerekli!"); return; }
-
-        let score = Math.floor(Math.min(Math.min(desc.length / 2, 60) + (light === "night" ? 40 : 20), 100));
-        const rawData = { detay: desc, isik: light, koordinat: selectedLoc, tarih: new Date().toLocaleString(), guven: score };
-        const securePackage = sifrele(JSON.stringify(rawData));
-
-        try {
-            fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ secureData: securePackage }) });
-            fetch(BACKEND_URL, { method: 'POST', mode: 'no-cors' });
-            let current = parseInt(document.getElementById('countVal').innerText);
-            document.getElementById('countVal').innerText = current + 1;
-            finalizeProcess(current + 1, desc, light, score);
-            alert("İhbar şifrelenerek merkeze iletildi!");
-        } catch (e) { alert("Bir hata oluştu."); }
-    }
-
-    function finalizeProcess(newId, desc, light, score) {
-        let priority = Math.ceil(score / 20);
-        document.getElementById('scoreDisplay').innerText = score;
-        document.getElementById('priorityText').innerText = "Öncelik: " + priority;
-        document.getElementById('trustBorder').style.borderLeftColor = score > 75 ? "red" : "orange";
-
-        const data = { id: newId, detay: desc, guven: score, koordinat: selectedLoc, tarih: new Date().toLocaleString() };
-        const blob = new Blob([JSON.stringify(data, null, 2)], {type : 'application/json'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `ihbar_analiz_${newId}.json`;
-        a.click();
-    }
-
-    // --- ADMIN PANELİ ---
-    async function checkAdmin() {
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('admin') === 'true') {
-            const pass = prompt("Yönetici Şifresi:");
-            if (pass === "1234") renderAdminView();
-        }
-    }
-
-    async function renderAdminView() {
-        document.body.innerHTML = `<div class="section" style="max-width:95%">
-            <div style="display:flex; justify-content:space-between; align-items:center">
-                <h2>Yönetici Paneli (Güven/Öncelik Sıralı)</h2>
-                <button class="btn-main" onclick="location.reload()" style="width:100px; background:var(--secondary)">Çıkış</button>
-            </div>
-            <div id="admin-list" style="overflow-x:auto; margin-top:20px;">Yükleniyor...</div>
-        </div>`;
-        try {
-            const res = await fetch(DEPO_URL);
-            const data = await res.json();
-            let items = [];
-            data.forEach(row => {
-                const dec = JSON.parse(sifreCoz(row[1]));
-                if(dec) items.push({ serverDate: row[0], ...dec });
-            });
-
-            items.sort((a, b) => (b.guven || 0) - (a.guven || 0));
-
-            let html = "<table style='width:100%; border-collapse:collapse; min-width:800px;'>";
-            html += "<tr style='background:#eee; text-align:left;'><th>Skor</th><th>Tarih</th><th>Detay</th><th>Işık</th><th>Konum</th></tr>";
-            
-            items.forEach(item => {
-                let color = item.guven > 75 ? "#e74c3c" : (item.guven > 40 ? "#f39c12" : "#27ae60");
-                html += `<tr style='border-bottom:1px solid #ddd;'>
-                    <td style='padding:10px;'><span style='background:${color}; color:white; padding:3px 8px; border-radius:5px;'>%${item.guven || 0}</span></td>
-                    <td style='padding:10px; font-size:12px;'>${item.tarih}</td>
-                    <td style='padding:10px;'>${item.detay}</td>
-                    <td style='padding:10px; font-size:12px;'>${item.koordinat.lat.toFixed(4)}, ${item.koordinat.lng.toFixed(4)}</td>
-                </tr>`;
-            });
-            document.getElementById('admin-list').innerHTML = html + "</table>";
-        } catch (e) { document.getElementById('admin-list').innerHTML = "Hata: Veriler çözülemedi."; }
-    }
-
-    window.onload = checkAdmin;
-</script>
-</body>
-</html>m 
+            document.getElementById('countVal').innerText =
