@@ -66,7 +66,7 @@
     ["Türkiye'den yurt dışına kültür varlığı (tarihi eser) çıkarmak hangi durumlarda yasaldır?", "Arazi sahibi izin verdiğinde", "Eser çok küçükse", "Resmi izinler dışında hiçbir şekilde yasal değildir (2863 sayılı kanun)", 2],
     ["Bir kazı alanının 'Topografik Haritası' neden çıkarılır?", "Arazinin eğimini ve kalıntıların yükseklik koordinatlarını kaydetmek için", "Turistlere yol göstermek için", "Arazinin tapu değerini artırmak için", 0],
     ["İzotop Analizi arkeolojide neyi belirlemek için kullanılır?", "Eserin fiyatını", "Eski insanların beslenme türlerini ve hangi coğrafyadan göç ettiklerini", "Metalin sertliğini", 1],
-    ["Kazı başkanının yetki ve sorumlulukları hangi kurum tarafından denetlenir?", "Yerel belediyeler", "Kültür ve Turizm Bakanlığı", "Üniversite öğrenci kulüpleri", 1]
+    ["Kazı başkanının yetki ve sorumlulukları hangi kurum tarafından denetlenir?", "Yerel belediyeler", "Kültür ve Turizm Bakanlığı", "Üniversite öğrenci kulüpleri", 1],
     ["Sümerlerin kullandığı 'Çivi Yazısı' (Cuneiform) genellikle hangi materyal üzerine yazılırdı?", "Kil tabletler", "Papirüs kağıtları", "Ceylan derisi", 0],
     ["Arkeolojide 'Höyük' ile 'Tümülüs' arasındaki temel fark nedir?", "Höyük doğal bir tepedir, tümülüs yapaydır", "Höyük bir mezar yapısıdır, tümülüs şehirdir", "Höyük üst üste binmiş yerleşim yeridir, tümülüs ise yapay bir mezar tepesidir", 2],
     ["Arkeolojik eserlerin bozulmasını durdurmak ve mevcut durumunu korumak işlemine ne ad verilir?", "Restorasyon", "Konservasyon", "Ekskavasyon", 1],
@@ -86,7 +86,7 @@
     ["1. Derece Arkeolojik Sit Alanı'nda tarımsal faaliyet veya yapılaşma neden yasaktır?", "Toprağın verimsiz olması nedeniyle", "Yüzeye yakın arkeolojik tabakalara zarar vermemek ve kültürel dokuyu korumak için", "Bölgede su kaynağı olmadığı için", 1],
     ["Antik dönem duvarlarında taşları birbirine bağlamak için kullanılan, içinde kireç ve kum bulunan karışıma ne denir?", "Alçı", "Plastik", "Harç", 2],
     ["Müzelerdeki eserlerin halka sunulması ve anlatılması sürecine ne ad verilir?", "Teşhir ve Tanzim", "Depolama", "Envanter", 0],
-    ["Vatandaşların arazide buldukları bir kültür varlığını en geç kaç saat içinde en yakın müze müdürlüğüne bildirmesi gerekir?", "1 saat", "72 saat (3 gün)", "1 ay", 1]
+    ["Vatandaşların arazide buldukları bir kültür varlığını en geç kaç saat içinde en yakın müze müdürlüğüne bildirmesi gerekir?", "1 saat", "72 saat (3 gün)", "1 ay", 1],
     ["Efes'in simgesi olan ve antik dünyanın en büyük kütüphanelerinden biri sayılan yapı hangisidir?", "Celsus Kütüphanesi", "İskenderiye Kütüphanesi", "Efes Devlet Arşivi", 0],
     ["Dünyanın Yedi Harikası'ndan biri kabul edilen ve Efes'te bulunan devasa yapı hangisidir?", "Zeus Tapınağı", "Artemis Tapınağı", "Halikarnas Mozolesi", 1],
     ["Efes'teki 'Yamaç Evler' (Terrace Houses) temel olarak kimlerin ikamet etmesi için tasarlanmıştır?", "Şehrin zengin ve soylu aileleri", "Roma lejyonerleri", "Liman işçileri", 0],
@@ -98,6 +98,7 @@
     ["Efes'te hem siyasi meclis toplantılarının yapıldığı hem de konserler için kullanılan küçük tiyatro yapısına ne denir?", "Odeon", "Stadyum", "Agora", 0],
     ["Efes'in en görkemli caddelerinden biri olan ve üzerinde Hadrian Tapınağı'nın bulunduğu yolun adı nedir?", "Liman Caddesi", "Kuretler Caddesi", "Kral Yolu", 1]
 ]
+
 
 
 
