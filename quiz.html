@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arkeoloji Uzmanlık Testi | FLL LEGOLOGLAR</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #00b4d8; --secondary: #03045e; --earth: #935805;
+            --bg: #f1f3f8; --white: #ffffff; --accent: #0096c7; --light-blue: #caf0f8;
+        }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--secondary); display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        
+        .quiz-container { background: var(--white); border-radius: 20px; padding: 40px; width: 90%; max-width: 650px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border-top: 10px solid var(--earth); }
+        
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { color: var(--secondary); margin-bottom: 5px; }
+        
+        .progress-bar { height: 12px; background: #eee; border-radius: 6px; margin: 20px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--earth); width: 0%; transition: 0.4s; }
+        
+        #question-text { font-size: 20px; font-weight: 600; margin-bottom: 25px; line-height: 1.4; }
+        
+        .options { list-style: none; padding: 0; }
+        .options li { 
+            background: #f8f9fa; 
+            padding: 18px; 
+            margin: 12px 0; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            border: 2px solid #eee; 
+            transition: 0.3s; 
+            font-weight: 500;
+        }
+        .options li:hover { background: var(--light-blue); border-color: var(--primary); transform: translateX(5px); }
+        .options li.correct { background: #d4edda; border-color: #28a745; color: #155724; }
+        .options li.wrong { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+
+        .btn-action { 
+            background: var(--secondary); 
+            color: white; 
+            border: none; 
+            padding: 15px 30px; 
+            border-radius: 12px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        #result-screen { text-align: center; display: none; }
+        .score-circle { 
+            width: 120px; height: 120px; border-radius: 50%; 
+            background: var(--earth); color: white; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 32px; font-weight: bold; margin: 20px auto; 
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div id="quiz-screen">
+        <header>
+            <h1>🏛️ Uzmanlık Testi</h1>
+            <p id="q-counter">Soru yükleniyor...</p>
+            <div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
+        </header>
+
+        <div id="question-text">Sorular hazırlanıyor, lütfen bekleyin...</div>
+        <ul id="options-list" class="options"></ul>
+    </div>
+
+    <div id="result-screen">
+        <i class="fas fa-trophy" style="font-size: 60px; color: #f1c40f;"></i>
+        <h2>Test Tamamlandı!</h2>
+        <div class="score-circle" id="final-score">0/0</div>
+        <p id="result-text"></p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button onclick="location.reload()" class="btn-action" style="background: var(--earth);">Tekrar Çöz</button>
+            <a href="index.
