@@ -37,7 +37,6 @@
         .quiz-bridge { margin-top: 30px; text-align: center; border-top: 2px dashed #ccc; padding-top: 20px; }
         .btn-quiz-go { background: var(--earth); color: white; border: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
 
-        /* YÖNETİCİ MODAL (İncele Penceresi) */
         .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto; }
         .modal-content { background: white; margin: 3% auto; padding: 25px; border-radius: 15px; width: 90%; max-width: 700px; position: relative; color: #333; }
         .close-modal { position: absolute; right: 20px; top: 10px; font-size: 30px; cursor: pointer; }
@@ -152,6 +151,7 @@
     function sifrele(metin) { return CryptoJS.AES.encrypt(metin, GIZLI_ANAHTAR).toString(); }
     function sifreCoz(sifreliMetin) {
         try {
+            if(!sifreliMetin) return null;
             const bytes = CryptoJS.AES.decrypt(sifreliMetin, GIZLI_ANAHTAR);
             const decoded = bytes.toString(CryptoJS.enc.Utf8);
             return decoded ? decoded : null;
@@ -189,7 +189,6 @@
         const securePackage = sifrele(JSON.stringify(rawData));
         
         try {
-            // Veriyi Apps Script 4'e bölecek
             fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ secureData: securePackage }) });
             fetch(BACKEND_URL, { method: 'POST', mode: 'no-cors' });
             alert("İhbar başarıyla iletildi.");
@@ -206,6 +205,7 @@
     }
 
     async function renderAdminView() {
+        // Arayüzü Yönetici Paneline dönüştür
         document.getElementById('main-content').innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <h2>🕵️ Yönetici Kontrol Paneli</h2>
@@ -216,28 +216,49 @@
         try {
             const res = await fetch(DEPO_URL);
             const data = await res.json();
+            
+            if (!data || data.length === 0) {
+                document.getElementById('admin-list').innerHTML = "Henüz ihbar bulunmuyor.";
+                return;
+            }
+
             let html = "<table style='width:100%; border-collapse:collapse; background:white; font-size:13px;'>";
             html += "<tr style='background:#eee; text-align:left;'><th>Güven</th><th>İhbarcı</th><th>Zaman</th><th>İşlem</th></tr>";
             
+            let count = 0;
             data.forEach((row, index) => {
-                // 4 HÜCREYİ BİRLEŞTİREREK ŞİFRELİ VERİYİ KURTARIYORUZ
+                // Sütun yapısı: [0]Tarih, [1]Parça1, [2]Parça2, [3]Parça3, [4]Parça4
                 const fullEncryptedData = (row[1] || "") + (row[2] || "") + (row[3] || "") + (row[4] || "");
-                const decStr = sifreCoz(fullEncryptedData);
                 
-                if(decStr) {
-                    const item = JSON.parse(decStr);
-                    cachedReports[index] = item; 
-                    let color = item.guven > 60 ? "#e74c3c" : "#27ae60";
-                    html += `<tr style='border-bottom:1px solid #ddd;'>
-                        <td style='padding:12px;'><span style='background:${color}; color:white; padding:4px 8px; border-radius:5px;'>%${item.guven}</span></td>
-                        <td style='padding:12px;'>${item.ad}</td>
-                        <td style='padding:12px;'>${item.olayZamani}</td>
-                        <td style='padding:12px;'><button onclick="openDetail(${index})" style="background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer;">İNCELE</button></td>
-                    </tr>`;
+                if (fullEncryptedData.trim().length > 0) {
+                    const decStr = sifreCoz(fullEncryptedData);
+                    if(decStr) {
+                        try {
+                            const item = JSON.parse(decStr);
+                            cachedReports[index] = item; 
+                            let color = item.guven > 60 ? "#e74c3c" : "#27ae60";
+                            html += `<tr style='border-bottom:1px solid #ddd;'>
+                                <td style='padding:12px;'><span style='background:${color}; color:white; padding:4px 8px; border-radius:5px;'>%${item.guven}</span></td>
+                                <td style='padding:12px;'>${item.ad}</td>
+                                <td style='padding:12px;'>${item.olayZamani}</td>
+                                <td style='padding:12px;'><button onclick="openDetail(${index})" style="background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer;">İNCELE</button></td>
+                            </tr>`;
+                            count++;
+                        } catch (parseErr) { console.log("Satır ayrıştırma hatası index: " + index); }
+                    }
                 }
             });
-            document.getElementById('admin-list').innerHTML = html + "</table>";
-        } catch (e) { document.getElementById('admin-list').innerHTML = "Veriler işlenirken hata oluştu."; }
+
+            if(count === 0) {
+                document.getElementById('admin-list').innerHTML = "Okunabilir veri bulunamadı.";
+            } else {
+                document.getElementById('admin-list').innerHTML = html + "</table>";
+            }
+
+        } catch (e) { 
+            console.error(e);
+            document.getElementById('admin-list').innerHTML = "Veriler işlenirken hata oluştu. Lütfen DEPO_URL bağlantısını kontrol edin."; 
+        }
     }
 
     function openDetail(index) {
@@ -263,8 +284,8 @@
     async function deleteReport(index) {
         if(confirm("Bu ihbarı silmek istediğinize emin misiniz?")) {
             fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: index }) });
-            alert("Silme talebi iletildi.");
-            location.reload();
+            alert("Silme talebi iletildi. Liste güncelleniyor...");
+            setTimeout(() => location.reload(), 1000);
         }
     }
 
