@@ -19,17 +19,25 @@
         .page { min-height: 100vh; width: 100%; }
         header { background: linear-gradient(135deg, var(--secondary), var(--primary)); color: white; padding: 30px 20px; text-align: center; }
         .section { background: var(--white); border-radius: 20px; padding: 30px; margin: 20px auto; max-width: 850px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        
         .stat-card { background: var(--light-blue); padding: 15px; border-radius: 12px; text-align: center; font-weight: bold; margin-bottom: 20px; }
         
-        /* Fotoğraf Yükleme Alanı */
+        #map { height: 350px; border-radius: 15px; border: 2px solid var(--light-blue); margin: 10px 0 20px 0; z-index: 1; width: 100%; }
+        
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        label { font-weight: bold; margin-bottom: 8px; display: block; }
+        input, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--light-blue); box-sizing: border-box; font-family: inherit; font-size: 14px; }
+        
+        /* Fotoğraf Alanı Tasarımı */
         .upload-area { border: 2px dashed var(--accent); border-radius: 15px; padding: 20px; text-align: center; background: #fafafa; cursor: pointer; transition: 0.3s; margin-bottom: 15px; }
         .upload-area:hover { background: var(--light-blue); }
-        #imagePreview { width: 100%; max-height: 300px; object-fit: contain; border-radius: 10px; display: none; margin-top: 10px; }
+        #imagePreview { width: 100%; max-height: 250px; object-fit: contain; border-radius: 10px; display: none; margin-top: 10px; }
 
-        #map { height: 350px; border-radius: 15px; border: 2px solid var(--light-blue); margin-bottom: 20px; z-index: 1; }
-        input, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--light-blue); box-sizing: border-box; margin-bottom: 15px; font-family: inherit; }
-        .btn-main { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-main { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
         .btn-main:hover { background: var(--secondary); }
+        
+        .quiz-bridge { margin-top: 30px; text-align: center; border-top: 2px dashed #ccc; padding-top: 20px; }
+        .btn-quiz-go { background: var(--earth); color: white; border: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
     </style>
 </head>
 <body>
@@ -37,59 +45,88 @@
 <div id="report-page" class="page">
     <header>
         <h1>🏛️ Arkeolojik Miras Koruma Portalı</h1>
-        <p>İhbar Sistemi & Fotoğraflı Kanıt Paneli</p>
+        <p>İhbar Sistemi & Fotoğraflı Kanıt Analizi</p>
     </header>
 
     <div class="section">
-        <div class="stat-card">Kayıtlı İhbar: <span id="countVal">0</span></div>
-
-        <label><b>İhbarcı ve Olay Bilgisi</b></label>
-        <input type="text" id="rName" placeholder="Ad Soyad (Opsiyonel)">
-        <textarea id="rDesc" rows="4" placeholder="Şüpheli faaliyeti açıklayın..."></textarea>
-
-        <label><b>Kanıt Fotoğrafı</b></label>
-        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-            <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this)">
-            <div id="upload-text">
-                <i class="fas fa-camera" style="font-size:24px;"></i>
-                <p>Fotoğraf Çek veya Yükle</p>
-            </div>
-            <img id="imagePreview">
+        <div class="stat-card">
+            Kayıtlı İhbar Sayısı: <span id="countVal">0</span>
         </div>
 
-        <label><b>Konum Seçin</b></label>
-        <div id="map"></div>
+        <div class="form-group">
+            <label>İhbarcı Bilgisi</label>
+            <input type="text" id="rName" placeholder="Ad Soyad (Anonim için boş bırakın)">
+        </div>
         
-        <button class="btn-main" onclick="submitReport()">İHBARI GÖNDER</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Olay Tarihi</label>
+                <input type="date" id="eventDate">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Olay Saati</label>
+                <input type="time" id="eventTime">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Olay Detayı</label>
+            <textarea id="rDesc" rows="5" placeholder="Şüpheli faaliyeti detaylıca açıklayın..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Kanıt Fotoğrafı</label>
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this)">
+                <div id="upload-text">
+                    <i class="fas fa-camera" style="font-size: 24px; color: var(--accent);"></i>
+                    <p>Tıkla ve Fotoğraf Seç / Çek</p>
+                </div>
+                <img id="imagePreview">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Olay Konumu (Haritadan İşaretleyin)</label>
+            <div id="map"></div>
+        </div>
+        
+        <button class="btn-main" onclick="submitReport()">İHBARI GÜVENLİ GÖNDER</button>
+
+        <div class="quiz-bridge">
+            <h3>Arkeoloji Uzmanlık Testi</h3>
+            <a href="quiz.html" class="btn-quiz-go">
+                <i class="fas fa-graduation-cap"></i> Quize Başla
+            </a>
+        </div>
     </div>
 </div>
 
 <script>
-    const GIZLI_ANAHTAR = "LegologlarFLL2024";
-    const DEPO_URL = "https://script.google.com/macros/s/AKfycbxww2-ThoWar93P94sxsl_3JxHAY7_RrXjYEfM2i0FVn2LLBozDkkTu6MiU-wCrEQwLtg/exec";
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyFcIai4hAuiVG_M3q_vYnEQS5R1LFq14izib1MqoO2vXOe4Zi2IHR5mYuSOlPYEpye/exec";
+    const DEPO_URL = "https://script.google.com/macros/s/AKfycbxww2-ThoWar93P94sxsl_3JxHAY7_RrXjYEfM2i0FVn2LLBozDkkTu6MiU-wCrEQwLtg/exec"; 
+    const GIZLI_ANAHTAR = "LegologlarFLL2024";
 
     let base64Image = "";
     var map = L.map('map').setView([39.0, 35.0], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     var marker = null, selectedLoc = null;
 
-    map.on('click', e => {
+    map.on('click', function(e) {
         selectedLoc = e.latlng;
         if(marker) map.removeLayer(marker);
         marker = L.marker(selectedLoc).addTo(map);
     });
 
-    // Fotoğrafı Base64'e çevirme
+    // Dosya İşleme
     function handleFile(input) {
         const file = input.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = e => {
                 base64Image = e.target.result;
-                const img = document.getElementById('imagePreview');
-                img.src = base64Image;
-                img.style.display = "block";
+                document.getElementById('imagePreview').src = base64Image;
+                document.getElementById('imagePreview').style.display = "block";
                 document.getElementById('upload-text').style.display = "none";
             };
             reader.readAsDataURL(file);
@@ -98,64 +135,102 @@
 
     function sifrele(metin) { return CryptoJS.AES.encrypt(metin, GIZLI_ANAHTAR).toString(); }
     function sifreCoz(sifreliMetin) {
-        try { return CryptoJS.AES.decrypt(sifreliMetin, GIZLI_ANAHTAR).toString(CryptoJS.enc.Utf8); } catch(e) { return null; }
+        try {
+            const bytes = CryptoJS.AES.decrypt(sifreliMetin, GIZLI_ANAHTAR);
+            return bytes.toString(CryptoJS.enc.Utf8);
+        } catch (e) { return null; }
     }
+
+    async function syncCount() {
+        try {
+            const response = await fetch(BACKEND_URL);
+            const data = await response.json();
+            document.getElementById('countVal').innerText = data.total;
+        } catch (e) { console.error("Hata"); }
+    }
+    syncCount();
 
     async function submitReport() {
         const desc = document.getElementById('rDesc').value;
-        if(!selectedLoc || desc.length < 5) { alert("Konum ve açıklama eksik!"); return; }
+        const name = document.getElementById('rName').value || "Anonim";
+        const oDate = document.getElementById('eventDate').value;
+        const oTime = document.getElementById('eventTime').value;
 
+        if(!selectedLoc || desc.length < 5) { 
+            alert("Lütfen haritadan konum seçin ve açıklama yazın!"); 
+            return; 
+        }
+
+        let score = Math.floor(Math.min(desc.length / 1.5, 100));
+        
         const rawData = { 
+            ad: name,
             detay: desc, 
-            foto: base64Image, 
             koordinat: selectedLoc, 
-            tarih: new Date().toLocaleString() 
+            tarih: new Date().toLocaleString(),
+            olayZamani: `${oDate} ${oTime}`,
+            foto: base64Image,
+            guven: score 
         };
+        const securePackage = sifrele(JSON.stringify(rawData));
 
         try {
-            const secureData = sifrele(JSON.stringify(rawData));
-            await fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ secureData }) });
-            await fetch(BACKEND_URL, { method: 'POST', mode: 'no-cors' });
-            alert("İhbar ve fotoğraf merkeze iletildi!");
+            fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ secureData: securePackage }) });
+            fetch(BACKEND_URL, { method: 'POST', mode: 'no-cors' });
+            alert("İhbar başarıyla iletildi.");
             location.reload();
-        } catch(e) { alert("Hata!"); }
+        } catch (e) { alert("Hata oluştu."); }
     }
 
-    // --- ADMIN PANELİ (FOTOĞRAF GÖRÜNÜMÜ EKLENDİ) ---
     async function checkAdmin() {
-        if (new URLSearchParams(window.location.search).get('admin') === 'true') {
-            if (prompt("Şifre:") === "1234") renderAdmin();
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('admin') === 'true') {
+            const pass = prompt("Yönetici Şifresi:");
+            if (pass === "1234") renderAdminView();
         }
     }
 
-    async function renderAdmin() {
-        document.body.innerHTML = `<div class="section" style="max-width:98%">
-            <h2>🕵️ Yönetici Paneli</h2>
-            <div id="admin-list">Yükleniyor...</div>
-        </div>`;
-        const res = await fetch(DEPO_URL);
-        const data = await res.json();
-        let html = "<table border='1' style='width:100%; border-collapse:collapse;'><tr><th>Tarih</th><th>Detay</th><th>Fotoğraf</th><th>Konum</th></tr>";
+    async function renderAdminView() {
+        document.body.innerHTML = `
+            <div class="section" style="max-width:98%">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h2>🕵️ Yönetici Paneli (Tam Detaylı)</h2>
+                    <button class="btn-main" onclick="location.reload()" style="width:120px; background:var(--secondary)">Çıkış</button>
+                </div>
+                <div id="admin-list" style="overflow-x:auto;">Yükleniyor...</div>
+            </div>`;
         
-        data.forEach(row => {
-            const item = JSON.parse(sifreCoz(row[1]));
-            if(item) {
-                const imgTag = item.foto ? `<img src="${item.foto}" style="width:80px; height:80px; object-fit:cover; cursor:pointer" onclick="window.open('${item.foto}')">` : "Yok";
-                html += `<tr>
-                    <td style="padding:10px">${item.tarih}</td>
-                    <td style="padding:10px">${item.detay}</td>
-                    <td style="padding:10px; text-align:center">${imgTag}</td>
-                    <td style="padding:10px">${item.koordinat.lat.toFixed(4)}, ${item.koordinat.lng.toFixed(4)}</td>
+        try {
+            const res = await fetch(DEPO_URL);
+            const data = await res.json();
+            let items = [];
+            data.forEach(row => {
+                const dec = JSON.parse(sifreCoz(row[1]));
+                if(dec) items.push({ serverDate: row[0], ...dec });
+            });
+            items.sort((a, b) => (b.guven - a.guven));
+
+            let html = "<table style='width:100%; border-collapse:collapse; background:white; font-size:13px;'>";
+            html += "<tr style='background:#eee; text-align:left;'><th>Güven</th><th>Fotoğraf</th><th>İhbarcı</th><th>Olay Zamanı</th><th>Detay</th><th>Konum</th></tr>";
+            
+            items.forEach(item => {
+                let color = item.guven > 60 ? "#e74c3c" : "#27ae60";
+                let imgPreview = item.foto ? `<img src="${item.foto}" style="width:60px; height:60px; border-radius:5px; object-fit:cover; cursor:pointer;" onclick="window.open(this.src)">` : "Yok";
+                
+                html += `<tr style='border-bottom:1px solid #ddd;'>
+                    <td style='padding:10px;'><span style='background:${color}; color:white; padding:4px 8px; border-radius:5px;'>%${item.guven}</span></td>
+                    <td style='padding:10px; text-align:center;'>${imgPreview}</td>
+                    <td style='padding:10px;'>${item.ad || "Anonim"}</td>
+                    <td style='padding:10px; white-space:nowrap;'>${item.olayZamani || "Belirtilmedi"}</td>
+                    <td style='padding:10px; max-width:200px; word-wrap:break-word;'>${item.detay}</td>
+                    <td style='padding:10px;'>${item.koordinat.lat.toFixed(4)}, ${item.koordinat.lng.toFixed(4)}</td>
                 </tr>`;
-            }
-        });
-        document.getElementById('admin-list').innerHTML = html + "</table>";
+            });
+            document.getElementById('admin-list').innerHTML = html + "</table>";
+        } catch (e) { document.getElementById('admin-list').innerHTML = "Veri çözme hatası!"; }
     }
 
-    window.onload = () => {
-        checkAdmin();
-        fetch(BACKEND_URL).then(r => r.json()).then(d => document.getElementById('countVal').innerText = d.total);
-    };
+    window.onload = checkAdmin;
 </script>
 </body>
 </html>
