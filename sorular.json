@@ -48,7 +48,6 @@
     ["Dendrokronoloji yöntemi ile yaş tayini nasıl yapılır?", "Ağaç halkalarını sayarak ve karşılaştırarak", "Toprağı tartarak", "Karbon ölçerek", 0],
     ["Kaçak kazı izi olan bir alanda görülen 'boş alkol şişeleri' neyi ifade eder?", "Çöp toplama alanı olduğunu", "Piknik yapıldığını", "Yasadışı faaliyetin (gece kazısı) yapılmış olabileceğini", 2],
     ["Manyetometre cihazı arazide neyi tespit eder?", "Altın objeleri", "Hava sıcaklığını", "Toprak altındaki manyetik alan farklarını (fırın, duvar vb.)", 2]
-    ["Arkeolojide 'Estampaj' yöntemi ne amaçla kullanılır?", "Yazıtların kağıt üzerine kabartma kopyasını alarak daha rahat okumak için", "Eserleri parlatmak için", "Toprağın nem oranını ölçmek için", 0],
     ["Antik iskeletlerin diş yapısından hangi bilgiye ulaşılabilir?", "Kişinin kaç dil bildiğine", "Beslenme alışkanlıkları ve çocukluk dönemindeki hastalıklara", "Kişinin ayakkabı numarasına", 1],
     ["UNESCO Dünya Miras Listesi'ne bir alanın dahil edilmesinin temel amacı nedir?", "Alan üzerindeki toprağın mülkiyetini almak", "Bölgeyi turizme kapatmak", "Üstün evrensel değere sahip alanların korunması için uluslararası iş birliği sağlamak", 2],
     ["Arkeolojide 'Fotogrametri' tekniği ne işe yarar?", "Eserlerin ağırlığını ölçmeye", "Çok sayıda fotoğraf kullanarak yapıların 3 boyutlu dijital modellerini oluşturmaya", "Eserlerin hangi madenden yapıldığını anlamaya", 1],
@@ -99,5 +98,6 @@
     ["Efes'te hem siyasi meclis toplantılarının yapıldığı hem de konserler için kullanılan küçük tiyatro yapısına ne denir?", "Odeon", "Stadyum", "Agora", 0],
     ["Efes'in en görkemli caddelerinden biri olan ve üzerinde Hadrian Tapınağı'nın bulunduğu yolun adı nedir?", "Liman Caddesi", "Kuretler Caddesi", "Kral Yolu", 1]
 ]
+
 
 
