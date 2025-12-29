@@ -83,4 +83,102 @@
         <p id="result-text"></p>
         <div style="display: flex; gap: 10px; justify-content: center;">
             <button onclick="location.reload()" class="btn-action" style="background: var(--earth);">Tekrar Çöz</button>
-            <a href="index.
+            <a href="index.html" class="btn-action">Portale Dön</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    let quizBank = [];
+    let selectedQuestions = [];
+    let currentIdx = 0;
+    let score = 0;
+    let canClick = true;
+
+    async function initQuiz() {
+        try {
+            const response = await fetch('sorular.json?v=' + new Date().getTime());
+            if (!response.ok) throw new Error("sorular.json dosyası bulunamadı!");
+            
+            quizBank = await response.json();
+            
+            // Rastgele 20 soru seç (veya dosyadaki toplam soru kadar)
+            const limit = Math.min(quizBank.length, 20);
+            selectedQuestions = quizBank.sort(() => 0.5 - Math.random()).slice(0, limit);
+            
+            showQuestion();
+        } catch (e) {
+            document.getElementById('question-text').innerHTML = 
+                `<span style="color:red">Hata: ${e.message}<br><small>JSON formatını ve dosya adını kontrol edin.</small></span>`;
+        }
+    }
+
+    function showQuestion() {
+        canClick = true;
+        const q = selectedQuestions[currentIdx];
+        const total = selectedQuestions.length;
+
+        // UI Güncelle
+        document.getElementById('q-counter').innerText = `Soru: ${currentIdx + 1} / ${total}`;
+        document.getElementById('progress').style.width = ((currentIdx) / total * 100) + "%";
+        document.getElementById('question-text').innerText = q[0];
+
+        const list = document.getElementById('options-list');
+        list.innerHTML = "";
+
+        // Şıkları oluştur (A, B, C)
+        for (let i = 1; i <= 3; i++) {
+            const li = document.createElement('li');
+            li.innerText = (i === 1 ? "A) " : i === 2 ? "B) " : "C) ") + q[i];
+            li.onclick = () => checkAnswer(i - 1, q[4], li);
+            list.appendChild(li);
+        }
+    }
+
+    function checkAnswer(chosenIdx, correctIdx, element) {
+        if (!canClick) return;
+        canClick = false;
+
+        const listItems = document.querySelectorAll('.options li');
+        
+        if (chosenIdx === correctIdx) {
+            score++;
+            element.classList.add('correct');
+        } else {
+            element.classList.add('wrong');
+            listItems[correctIdx].classList.add('correct'); // Doğru olanı göster
+        }
+
+        // 1.5 saniye bekle ve sonraki soruya geç
+        setTimeout(() => {
+            currentIdx++;
+            if (currentIdx < selectedQuestions.length) {
+                showQuestion();
+            } else {
+                showFinalResult();
+            }
+        }, 1200);
+    }
+
+    function showFinalResult() {
+        document.getElementById('quiz-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        const total = selectedQuestions.length;
+        document.getElementById('final-score').innerText = `${score} / ${total}`;
+        
+        let msg = "";
+        const percent = (score / total) * 100;
+        if (percent >= 80) msg = "Mükemmel! Gerçek bir Arkeoloji uzmanısınız.";
+        else if (percent >= 50) msg = "Gayet iyi! Kültürel mirasa duyarlısınız.";
+        else msg = "Daha fazla öğrenerek mirasımızı korumamıza yardımcı olabilirsiniz.";
+        
+        document.getElementById('result-text').innerText = msg;
+    }
+
+    // Testi başlat
+    initQuiz();
+</script>
+
+</body>
+</html>
