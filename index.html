@@ -38,12 +38,10 @@
         .quiz-bridge { margin-top: 30px; text-align: center; border-top: 2px dashed #ccc; padding-top: 20px; }
         .btn-quiz-go { background: var(--earth); color: white; border: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
 
-        /* MODAL TASARIMI */
         .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); overflow-y: auto; }
         .modal-content { background: white; margin: 5% auto; padding: 25px; border-radius: 15px; width: 90%; max-width: 650px; position: relative; }
         .close-modal { position: absolute; right: 20px; top: 10px; font-size: 30px; cursor: pointer; }
 
-        /* MOBİL DÜZENLEME */
         @media (max-width: 600px) {
             .section div[style*="display: grid"] { display: flex !important; flex-direction: column !important; gap: 15px !important; }
             input[type="date"], input[type="time"] { width: 100% !important; min-height: 45px; margin-bottom: 5px; }
@@ -125,6 +123,7 @@
     const GIZLI_ANAHTAR = "LegologlarFLL2024";
 
     let base64Image = "";
+    let cachedReports = []; // VERİLERİ SAKLAMAK İÇİN BELLEK
     var map = L.map('map').setView([39.0, 35.0], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     var marker = null, selectedLoc = null;
@@ -177,7 +176,6 @@
             return; 
         }
 
-        // IP Alma İşlemi
         let userIp = "Alınamadı";
         try {
             const ipRes = await fetch("https://api.ipify.org?format=json");
@@ -216,9 +214,11 @@
         }
     }
 
-    // MODAL FONKSİYONLARI
-    function openDetail(dataStr, rowIndex) {
-        const item = JSON.parse(decodeURIComponent(dataStr));
+    // MODAL FONKSİYONLARI (BELLEK ODAKLI)
+    function openDetail(index) {
+        const item = cachedReports[index];
+        if(!item) return;
+
         document.getElementById('mBody').innerHTML = `
             <b>📍 Konum:</b> ${item.koordinat.lat.toFixed(4)}, ${item.koordinat.lng.toFixed(4)}<br>
             <b>👤 İhbarcı:</b> ${item.ad}<br>
@@ -229,7 +229,7 @@
             <b>📝 Açıklama:</b> <p style="background:#f8f9fa; padding:10px; border-radius:5px;">${item.detay}</p>
         `;
         document.getElementById('mImage').innerHTML = item.foto ? `<img src="${item.foto}" style="width:100%; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.1);">` : "<b>Fotoğraf Kanıtı Yok</b>";
-        document.getElementById('delBtn').onclick = () => deleteReport(rowIndex);
+        document.getElementById('delBtn').onclick = () => deleteReport(index);
         document.getElementById('detailModal').style.display = "block";
     }
 
@@ -238,7 +238,6 @@
     async function deleteReport(index) {
         if(confirm("Bu ihbarı ve tüm kanıtlarını kalıcı olarak silmek istiyor musunuz?")) {
             try {
-                // Not: Google Sheets tarafında "action: delete" kontrolü yapan bir kod olmalıdır.
                 fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: index }) });
                 alert("Silme işlemi başlatıldı.");
                 location.reload();
@@ -259,20 +258,22 @@
         try {
             const res = await fetch(DEPO_URL);
             const data = await res.json();
+            cachedReports = []; // Önce temizle
+
             let html = "<table style='width:100%; border-collapse:collapse; background:white; font-size:13px;'>";
             html += "<tr style='background:#eee; text-align:left;'><th>Güven</th><th>IP</th><th>İhbarcı</th><th>Zaman</th><th>İşlem</th></tr>";
             
             data.forEach((row, index) => {
                 const item = JSON.parse(sifreCoz(row[1]));
                 if(item) {
+                    cachedReports[index] = item; // Veriyi belleğe al
                     let color = item.guven > 60 ? "#e74c3c" : "#27ae60";
-                    let encoded = encodeURIComponent(JSON.stringify(item));
                     html += `<tr style='border-bottom:1px solid #ddd;'>
                         <td style='padding:12px;'><span style='background:${color}; color:white; padding:4px 8px; border-radius:5px;'>%${item.guven}</span></td>
                         <td style='padding:12px; font-weight:bold; color:#d62828;'>${item.ip || '---'}</td>
                         <td style='padding:12px;'>${item.ad}</td>
                         <td style='padding:12px;'>${item.olayZamani}</td>
-                        <td style='padding:12px;'><button onclick="openDetail('${encoded}', ${index})" style="background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer;">DETAYLI İNCELE</button></td>
+                        <td style='padding:12px;'><button onclick="openDetail(${index})" style="background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer;">DETAYLI İNCELE</button></td>
                     </tr>`;
                 }
             });
