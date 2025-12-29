@@ -38,6 +38,31 @@
         
         .quiz-bridge { margin-top: 30px; text-align: center; border-top: 2px dashed #ccc; padding-top: 20px; }
         .btn-quiz-go { background: var(--earth); color: white; border: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
+        /* Mobil Optimizasyon (768px'den küçük ekranlar için) */
+@media (max-width: 768px) {
+    .section {
+        margin: 10px; /* Kenar boşluklarını azalt */
+        padding: 15px; /* İç boşluğu daralt */
+    }
+
+    /* Tarih ve saati mobilde alt alta getir */
+    .grid-container {
+        grid-template-columns: 1fr !important; 
+    }
+
+    header h1 {
+        font-size: 22px; /* Başlığı mobilde küçült */
+    }
+
+    #map {
+        height: 250px; /* Haritayı mobilde biraz daha kısa tut */
+    }
+
+    .btn-main {
+        font-size: 16px; /* Buton yazısını optimize et */
+        padding: 12px;
+    }
+}
     </style>
 </head>
 <body>
