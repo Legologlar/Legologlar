@@ -254,24 +254,46 @@
             document.getElementById('admin-list').innerHTML = "Hata: Verilere ulaşılamadı. Lütfen internet bağlantısını ve Apps Script izinlerini kontrol edin."; 
         }
     }
+    // Detay Modalını Açan Fonksiyonu Güncelliyoruz
+function openDetail(index) {
+    const item = cachedReports[index];
+    if(!item) return;
 
-    function openDetail(index) {
-        const item = cachedReports[index];
-        if(!item) return;
+    document.getElementById('mBody').innerHTML = `
+        <b>📍 Konum:</b> ${item.koordinat.lat.toFixed(5)}, ${item.koordinat.lng.toFixed(5)}<br>
+        <b>👤 İhbarcı:</b> ${item.ad}<br>
+        <b>📅 Olay Zamanı:</b> ${item.olayZamani}<br>
+        <b>🛡️ Güven Skoru:</b> %${item.guven}<br>
+        <b>📝 Detay:</b> <p style="background:#f9f9f9; padding:10px; border-radius:8px; border-left:4px solid var(--accent);">${item.detay}</p>
+    `;
+    
+    document.getElementById('mImage').innerHTML = item.foto ? 
+        `<img src="${item.foto}" style="max-width:100%; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">` : "Fotoğraf yok.";
+    
+    // BUTON GÜNCELLEME: Silme yerine İndirme fonksiyonu
+    const actionBtn = document.getElementById('delBtn');
+    actionBtn.innerHTML = '<i class="fas fa-file-download"></i> İHBARI JSON OLARAK İNDİR';
+    actionBtn.style.background = "#2a9d8f"; // Yeşil tonu
+    actionBtn.onclick = () => downloadJSON(item, index);
+    
+    document.getElementById('detailModal').style.display = "block";
+}
 
-        document.getElementById('mBody').innerHTML = `
-            <b>📍 Konum:</b> ${item.koordinat.lat.toFixed(5)}, ${item.koordinat.lng.toFixed(5)}<br>
-            <b>👤 İhbarcı:</b> ${item.ad}<br>
-            <b>📅 Olay Zamanı:</b> ${item.olayZamani}<br>
-            <b>🛡️ Güven Skoru:</b> %${item.guven}<br>
-            <b>📝 Detay:</b> <p style="background:#f9f9f9; padding:10px; border-radius:8px; border-left:4px solid var(--accent);">${item.detay}</p>
-        `;
-        document.getElementById('mImage').innerHTML = item.foto ? 
-            `<img src="${item.foto}" style="max-width:100%; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">` : "Fotoğraf yok.";
-        
-        document.getElementById('delBtn').onclick = () => deleteReport(index);
-        document.getElementById('detailModal').style.display = "block";
-    }
+// Yeni: JSON İndirme Fonksiyonu
+function downloadJSON(data, index) {
+    const fileName = `ihbar_${index + 1}_${data.ad.replace(/\s+/g, '_')}.json`;
+    const jsonStr = JSON.stringify(data, null, 2); // Okunabilir format
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
 
     function closeDetail() { document.getElementById('detailModal').style.display = "none"; }
 
