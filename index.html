@@ -146,33 +146,52 @@
 
     // --- AKILLI GÜVEN SKORU ALGORİTMASI ---
     function hesaplaAkilliGuven(metin) {
-        if (!metin || metin.length < 10) return 0;
+    if (!metin || metin.length < 15) return 0; // Çok kısa metinlere 0 puan
 
-        let skor = 0;
-        const kelimeler = metin.trim().split(/\s+/);
-        
-        // 1. Kelime Sayısı Kontrolü
-        skor += Math.min(kelimeler.length * 8, 40); 
+    let skor = 0;
+    const temizMetin = metin.toLowerCase().trim();
+    const kelimeler = temizMetin.split(/\s+/);
+    
+    // 1. ANLAMSIZLIK KONTROLÜ (Sessiz Harf Yığılması)
+    // Türkçe ve genel dillerde 4-5 sessiz harf yan yana gelmez (örn: "asdfgh")
+    const anlamsizDizi = /[^aeıioöuü\s]{5,}/g.test(temizMetin);
+    if (anlamsizDizi) return 10; // Eğer rastgele tuşlama varsa skor direkt 10'a düşer.
 
-        // 2. Rastgele Karakter Analizi (Entropi)
-        const benzersizHarf = new Set(metin.toLowerCase().replace(/[^a-z0-9]/g, "")).size;
-        if (benzersizHarf > 10) skor += 20;
+    // 2. KELİME ANALİZİ
+    // Gerçek bir ihbar en az 4 kelime olmalı
+    if (kelimeler.length >= 4) skor += 30;
+    else if (kelimeler.length >= 2) skor += 10;
 
-        // 3. Dil Yapısı (Sesli/Sessiz dengesi)
-        const sesliHarfler = metin.match(/[aeıioöuü]/gi);
-        const sesliOrani = sesliHarfler ? sesliHarfler.length / metin.length : 0;
-        if (sesliOrani > 0.2 && sesliOrani < 0.5) skor += 20;
-
-        // 4. Spam/Tekrar Engelleme
-        const tekrarKontrol = /(.)\1\1\1/.test(metin);
-        if (tekrarKontrol) skor -= 40;
-
-        // 5. Fotoğraf Bonus
-        if (base64Image) skor += 20;
-
-        return Math.max(0, Math.min(skor, 100));
+    // 3. SESLİ HARF DENGESİ (Doğal Dil Kontrolü)
+    // Türkçe'de sesli harf oranı genelde %30-%45 arasındadır.
+    const sesliHarfler = temizMetin.match(/[aeıioöuü]/g);
+    const sesliOrani = sesliHarfler ? sesliHarfler.length / temizMetin.length : 0;
+    if (sesliOrani > 0.25 && sesliOrani < 0.50) {
+        skor += 30;
+    } else {
+        skor -= 20; // Oran çok düşükse (sessiz harf yığını) veya çok yüksekse ceza
     }
 
+    // 4. TEKRAR EDEN KARAKTER CEZASI (Örn: "aaaa", "....")
+    const tekrarKontrol = /(.)\1\1/.test(temizMetin);
+    if (tekrarKontrol) skor -= 30;
+
+    // 5. ANAHTAR KELİME BONUSU (İçerik Analizi)
+    const anahtarKelimeler = ["kazı", "kepçe", "gece", "buldum", "tarihi", "lahit", "define", "şüpheli"];
+    let anahtarPuan = 0;
+    anahtarKelimeler.forEach(kelime => {
+        if (temizMetin.includes(kelime)) anahtarPuan += 10;
+    });
+    skor += Math.min(anahtarPuan, 20);
+
+    // 6. FOTOĞRAF KONTROLÜ
+    // Fotoğraf varsa puan ekle ama metin kötüyse fotoğraf tek başına kurtarmasın
+    if (base64Image) {
+        skor += (skor > 20) ? 20 : 5; 
+    }
+
+    return Math.max(0, Math.min(skor, 100));
+}
     function sifrele(metin) { return CryptoJS.AES.encrypt(metin, GIZLI_ANAHTAR).toString(); }
     function sifreCoz(sifreliMetin) {
         try {
