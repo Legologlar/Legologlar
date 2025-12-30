@@ -43,8 +43,6 @@
 
         @media (max-width: 600px) {
             .section div[style*="display: grid"] { display: flex !important; flex-direction: column !important; gap: 15px !important; }
-            input[type="date"], input[type="time"] { width: 100% !important; min-height: 45px; margin-bottom: 5px; }
-            .form-group label { margin-top: 10px; }
         }
     </style>
 </head>
@@ -91,7 +89,7 @@
             <div id="map"></div>
         </div>
         
-        <button class="btn-main" onclick="submitReport()">İHBARI GÜVENLİ GÖNDER</button>
+        <button class="btn-main" onclick="submitReport()">İHBARI GÖNDER</button>
 
         <div class="quiz-bridge">
             <h3>Arkeoloji Uzmanlık Testi</h3>
@@ -110,13 +108,12 @@
         <div id="mBody" style="line-height: 1.8; margin-top: 15px;"></div>
         <div id="mImage" style="margin-top:20px; text-align:center;"></div>
         <hr>
-        <button id="delBtn" style="background:#e63946; color:white; border:none; padding:15px; width:100%; border-radius:10px; cursor:pointer; font-weight:bold; margin-top:10px;">
-            <i class="fas fa-trash"></i> BU İHBARI SİSTEMDEN KALDIR
-        </button>
+        <div id="modalFooter"></div>
     </div>
 </div>
 
 <script>
+    // URL'leri ve Anahtarı kontrol edin
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyFcIai4hAuiVG_M3q_vYnEQS5R1LFq14izib1MqoO2vXOe4Zi2IHR5mYuSOlPYEpye/exec";
     const DEPO_URL = "https://script.google.com/macros/s/AKfycbwEdBIzBrUYGq3cnNrmDpFgt3tBK5TTwlF33N9MvXMyj8aGoECbLALJJUrQCPo9n5XeoQ/exec"; 
     const GIZLI_ANAHTAR = "LegologlarFLL2024";
@@ -151,10 +148,8 @@
     function sifrele(metin) { return CryptoJS.AES.encrypt(metin, GIZLI_ANAHTAR).toString(); }
     function sifreCoz(sifreliMetin) {
         try {
-            if(!sifreliMetin) return null;
             const bytes = CryptoJS.AES.decrypt(sifreliMetin, GIZLI_ANAHTAR);
-            const decoded = bytes.toString(CryptoJS.enc.Utf8);
-            return decoded ? decoded : null;
+            return bytes.toString(CryptoJS.enc.Utf8);
         } catch (e) { return null; }
     }
 
@@ -219,16 +214,13 @@
             let html = "<table style='width:100%; border-collapse:collapse; background:white; font-size:13px;'>";
             html += "<tr style='background:#eee; text-align:left;'><th>Güven</th><th>İhbarcı</th><th>Zaman</th><th>İşlem</th></tr>";
             
-// renderAdminView içindeki döngü bölümü
-       data.forEach((row, index) => {
-        // row[0] Tarih'tir. row[1]'den row[7]'ye kadar olan hücreleri birleştiriyoruz.
+            let count = 0;
+            data.forEach((row, index) => {
+                // 7 PARÇA BİRLEŞTİRME MANTIĞI: row[1] ile row[7] arasını toplar
                 let fullEncryptedData = "";
                 for(let i = 1; i <= 7; i++) {
-        if(row[i]) {
-            fullEncryptedData += String(row[i]).trim();
-        }
-    }
-    
+                    if(row[i]) fullEncryptedData += String(row[i]).trim();
+                }
                 
                 if (fullEncryptedData.length > 30) { 
                     const decStr = sifreCoz(fullEncryptedData);
@@ -244,90 +236,69 @@
                                 <td style='padding:12px;'><button onclick="openDetail(${index})" style="background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer;">İNCELE</button></td>
                             </tr>`;
                             count++;
-                        } catch (e) { console.error("JSON Error at index " + index); }
+                        } catch (e) { console.error("JSON Error"); }
                     }
                 }
             });
 
             document.getElementById('admin-list').innerHTML = count > 0 ? html + "</table>" : "Görüntülenecek ihbar verisi bulunamadı.";
-
         } catch (e) { 
-            document.getElementById('admin-list').innerHTML = "Hata: Verilere ulaşılamadı. Lütfen internet bağlantısını ve Apps Script izinlerini kontrol edin."; 
+            document.getElementById('admin-list').innerHTML = "Hata: Verilere ulaşılamadı."; 
         }
     }
-function openDetail(index) {
-    const item = cachedReports[index];
-    if(!item) return;
 
-    document.getElementById('mBody').innerHTML = `
-        <b>📍 Konum:</b> ${item.koordinat.lat.toFixed(5)}, ${item.koordinat.lng.toFixed(5)}<br>
-        <b>👤 İhbarcı:</b> ${item.ad}<br>
-        <b>📅 Olay Zamanı:</b> ${item.olayZamani}<br>
-        <b>🛡️ Güven Skoru:</b> %${item.guven}<br>
-        <b>📝 Detay:</b> <p style="background:#f9f9f9; padding:10px; border-radius:8px; border-left:4px solid var(--accent);">${item.detay}</p>
-    `;
-    
-    document.getElementById('mImage').innerHTML = item.foto ? 
-        `<img src="${item.foto}" style="max-width:100%; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">` : "Fotoğraf yok.";
-    
-    // BUTONLARI HAZIRLA
-    // Eski tek buton yerine iki butonlu bir yapı oluşturuyoruz
-    const modalFooter = document.getElementById('delBtn').parentElement;
-    modalFooter.innerHTML = `
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
-            <button onclick="downloadJSON(${index})" style="background:#2a9d8f; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer; font-weight:bold;">
-                <i class="fas fa-file-download"></i> JSON İNDİR
-            </button>
-            <button onclick="deleteReport(${index})" style="background:#e63946; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer; font-weight:bold;">
-                <i class="fas fa-trash"></i> İHBARI SİL
-            </button>
-        </div>
-    `;
-    
-    document.getElementById('detailModal').style.display = "block";
-}
+    function openDetail(index) {
+        const item = cachedReports[index];
+        if(!item) return;
 
-// JSON İndirme Fonksiyonu
-function downloadJSON(index) {
-    const data = cachedReports[index];
-    const fileName = `ihbar_${index + 1}_${data.ad.replace(/\s+/g, '_')}.json`;
-    const jsonStr = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.click();
-    URL.revokeObjectURL(url);
-}
-
-// Silme Fonksiyonu
-async function deleteReport(index) {
-    if(confirm("Bu ihbarı kalıcı olarak silmek istediğinize emin misiniz?")) {
-        try {
-            // Apps Script'e silme isteği gönder
-            await fetch(DEPO_URL, { 
-                method: 'POST', 
-                mode: 'no-cors', 
-                body: JSON.stringify({ action: "delete", rowIndex: index }) 
-            });
-            alert("Silme talebi gönderildi. Liste yenileniyor...");
-            setTimeout(() => location.reload(), 1000);
-        } catch (e) {
-            alert("Silme işlemi sırasında hata oluştu.");
-        }
+        document.getElementById('mBody').innerHTML = `
+            <b>📍 Konum:</b> ${item.koordinat.lat.toFixed(5)}, ${item.koordinat.lng.toFixed(5)}<br>
+            <b>👤 İhbarcı:</b> ${item.ad}<br>
+            <b>📅 Olay Zamanı:</b> ${item.olayZamani}<br>
+            <b>🛡️ Güven Skoru:</b> %${item.guven}<br>
+            <b>📝 Detay:</b> <p style="background:#f9f9f9; padding:10px; border-radius:8px; border-left:4px solid var(--accent);">${item.detay}</p>
+        `;
+        
+        document.getElementById('mImage').innerHTML = item.foto ? 
+            `<img src="${item.foto}" style="max-width:100%; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">` : "Fotoğraf yok.";
+        
+        // SİL VE İNDİR BUTONLARI
+        document.getElementById('modalFooter').innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                <button onclick="downloadJSON(${index})" style="background:#2a9d8f; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer; font-weight:bold;">
+                    <i class="fas fa-file-download"></i> JSON İNDİR
+                </button>
+                <button onclick="deleteReport(${index})" style="background:#e63946; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer; font-weight:bold;">
+                    <i class="fas fa-trash"></i> İHBARI SİL
+                </button>
+            </div>
+        `;
+        
+        document.getElementById('detailModal').style.display = "block";
     }
-}
 
-    function closeDetail() { document.getElementById('detailModal').style.display = "none"; }
+    function downloadJSON(index) {
+        const data = cachedReports[index];
+        const fileName = `ihbar_${index + 1}.json`;
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.click();
+    }
 
     async function deleteReport(index) {
         if(confirm("Bu ihbarı silmek istediğinize emin misiniz?")) {
-            fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: index }) });
-            alert("Silme talebi iletildi.");
-            location.reload();
+            try {
+                await fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: index }) });
+                alert("Silme talebi iletildi.");
+                location.reload();
+            } catch (e) { alert("Hata!"); }
         }
     }
+
+    function closeDetail() { document.getElementById('detailModal').style.display = "none"; }
 
     window.onload = checkAdmin;
 </script>
