@@ -254,7 +254,6 @@
             document.getElementById('admin-list').innerHTML = "Hata: Verilere ulaşılamadı. Lütfen internet bağlantısını ve Apps Script izinlerini kontrol edin."; 
         }
     }
-    // Detay Modalını Açan Fonksiyonu Güncelliyoruz
 function openDetail(index) {
     const item = cachedReports[index];
     if(!item) return;
@@ -270,29 +269,53 @@ function openDetail(index) {
     document.getElementById('mImage').innerHTML = item.foto ? 
         `<img src="${item.foto}" style="max-width:100%; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">` : "Fotoğraf yok.";
     
-    // BUTON GÜNCELLEME: Silme yerine İndirme fonksiyonu
-    const actionBtn = document.getElementById('delBtn');
-    actionBtn.innerHTML = '<i class="fas fa-file-download"></i> İHBARI JSON OLARAK İNDİR';
-    actionBtn.style.background = "#2a9d8f"; // Yeşil tonu
-    actionBtn.onclick = () => downloadJSON(item, index);
+    // BUTONLARI HAZIRLA
+    // Eski tek buton yerine iki butonlu bir yapı oluşturuyoruz
+    const modalFooter = document.getElementById('delBtn').parentElement;
+    modalFooter.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+            <button onclick="downloadJSON(${index})" style="background:#2a9d8f; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer; font-weight:bold;">
+                <i class="fas fa-file-download"></i> JSON İNDİR
+            </button>
+            <button onclick="deleteReport(${index})" style="background:#e63946; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer; font-weight:bold;">
+                <i class="fas fa-trash"></i> İHBARI SİL
+            </button>
+        </div>
+    `;
     
     document.getElementById('detailModal').style.display = "block";
 }
 
-// Yeni: JSON İndirme Fonksiyonu
-function downloadJSON(data, index) {
+// JSON İndirme Fonksiyonu
+function downloadJSON(index) {
+    const data = cachedReports[index];
     const fileName = `ihbar_${index + 1}_${data.ad.replace(/\s+/g, '_')}.json`;
-    const jsonStr = JSON.stringify(data, null, 2); // Okunabilir format
+    const jsonStr = JSON.stringify(data, null, 2);
     const blob = new Blob([jsonStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    
     const link = document.createElement('a');
     link.href = url;
     link.download = fileName;
-    document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
     URL.revokeObjectURL(url);
+}
+
+// Silme Fonksiyonu
+async function deleteReport(index) {
+    if(confirm("Bu ihbarı kalıcı olarak silmek istediğinize emin misiniz?")) {
+        try {
+            // Apps Script'e silme isteği gönder
+            await fetch(DEPO_URL, { 
+                method: 'POST', 
+                mode: 'no-cors', 
+                body: JSON.stringify({ action: "delete", rowIndex: index }) 
+            });
+            alert("Silme talebi gönderildi. Liste yenileniyor...");
+            setTimeout(() => location.reload(), 1000);
+        } catch (e) {
+            alert("Silme işlemi sırasında hata oluştu.");
+        }
+    }
 }
 
     function closeDetail() { document.getElementById('detailModal').style.display = "none"; }
