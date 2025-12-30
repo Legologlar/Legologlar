@@ -21,14 +21,12 @@
         .section { background: var(--white); border-radius: 20px; padding: 30px; margin: 20px auto; max-width: 850px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         
         .stat-card { background: var(--light-blue); padding: 15px; border-radius: 12px; text-align: center; font-weight: bold; margin-bottom: 20px; }
-        
         #map { height: 350px; border-radius: 15px; border: 2px solid var(--light-blue); margin: 10px 0 20px 0; z-index: 1; width: 100%; }
         
         .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
         label { font-weight: bold; margin-bottom: 8px; display: block; }
         input, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--light-blue); box-sizing: border-box; font-family: inherit; font-size: 14px; }
         
-        /* Fotoğraf Alanı Tasarımı */
         .upload-area { border: 2px dashed var(--accent); border-radius: 15px; padding: 20px; text-align: center; background: #fafafa; cursor: pointer; transition: 0.3s; margin-bottom: 15px; }
         .upload-area:hover { background: var(--light-blue); }
         #imagePreview { width: 100%; max-height: 250px; object-fit: contain; border-radius: 10px; display: none; margin-top: 10px; }
@@ -38,28 +36,16 @@
         
         .quiz-bridge { margin-top: 30px; text-align: center; border-top: 2px dashed #ccc; padding-top: 20px; }
         .btn-quiz-go { background: var(--earth); color: white; border: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
-         /* Mobil Çakışma ve Geometri Düzenlemesi */
-    @media (max-width: 600px) {
-    /* Yan yana durmayı sağlayan grid'i iptal edip alt alta diziyoruz */
-    .section div[style*="display: grid"] {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 15px !important; /* Kutular arasına dikey boşluk ekler */
-    }
 
-    /* Tarih ve Saat kutularının genişliğini tam yapıyoruz */
-    input[type="date"], 
-    input[type="time"] {
-        width: 100% !important;
-        min-height: 45px;
-        margin-bottom: 5px;
-    }
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto; }
+        .modal-content { background: white; margin: 3% auto; padding: 25px; border-radius: 15px; width: 90%; max-width: 700px; position: relative; color: #333; }
+        .close-modal { position: absolute; right: 20px; top: 10px; font-size: 30px; cursor: pointer; }
 
-    /* Başlıkların kutuların hemen üstünde durmasını sağlıyoruz */
-    .form-group label {
-        margin-top: 10px;
-    }
-}
+        @media (max-width: 600px) {
+            .section div[style*="display: grid"] { display: flex !important; flex-direction: column !important; gap: 15px !important; }
+            input[type="date"], input[type="time"] { width: 100% !important; min-height: 45px; margin-bottom: 5px; }
+            .form-group label { margin-top: 10px; }
+        }
     </style>
 </head>
 <body>
@@ -70,10 +56,8 @@
         <p>İhbar Sistemi & Fotoğraflı Kanıt Analizi</p>
     </header>
 
-    <div class="section">
-        <div class="stat-card">
-            Kayıtlı İhbar Sayısı: <span id="countVal">0</span>
-        </div>
+    <div id="main-content" class="section">
+        <div class="stat-card">Kayıtlı İhbar Sayısı: <span id="countVal">0</span></div>
 
         <div class="form-group">
             <label>İhbarcı Bilgisi</label>
@@ -81,14 +65,8 @@
         </div>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-            <div class="form-group" style="margin-bottom:0;">
-                <label>Olay Tarihi</label>
-                <input type="date" id="eventDate">
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-                <label>Olay Saati</label>
-                <input type="time" id="eventTime">
-            </div>
+            <div class="form-group" style="margin-bottom:0;"><label>Olay Tarihi</label><input type="date" id="eventDate"></div>
+            <div class="form-group" style="margin-bottom:0;"><label>Olay Saati</label><input type="time" id="eventTime"></div>
         </div>
 
         <div class="form-group">
@@ -124,12 +102,28 @@
     </div>
 </div>
 
+<div id="detailModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeDetail()">&times;</span>
+        <h2>🕵️ İhbar Detay Raporu</h2>
+        <hr>
+        <div id="mBody" style="line-height: 1.8; margin-top: 15px;"></div>
+        <div id="mImage" style="margin-top:20px; text-align:center;"></div>
+        <hr>
+        <button id="delBtn" style="background:#e63946; color:white; border:none; padding:15px; width:100%; border-radius:10px; cursor:pointer; font-weight:bold; margin-top:10px;">
+            <i class="fas fa-trash"></i> BU İHBARI SİSTEMDEN KALDIR
+        </button>
+    </div>
+</div>
+
 <script>
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyFcIai4hAuiVG_M3q_vYnEQS5R1LFq14izib1MqoO2vXOe4Zi2IHR5mYuSOlPYEpye/exec";
     const DEPO_URL = "https://script.google.com/macros/s/AKfycbxww2-ThoWar93P94sxsl_3JxHAY7_RrXjYEfM2i0FVn2LLBozDkkTu6MiU-wCrEQwLtg/exec"; 
     const GIZLI_ANAHTAR = "LegologlarFLL2024";
 
     let base64Image = "";
+    let cachedReports = {}; 
+    
     var map = L.map('map').setView([39.0, 35.0], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
     var marker = null, selectedLoc = null;
@@ -140,7 +134,6 @@
         marker = L.marker(selectedLoc).addTo(map);
     });
 
-    // Dosya İşleme
     function handleFile(input) {
         const file = input.files[0];
         if (file) {
@@ -158,8 +151,10 @@
     function sifrele(metin) { return CryptoJS.AES.encrypt(metin, GIZLI_ANAHTAR).toString(); }
     function sifreCoz(sifreliMetin) {
         try {
+            if(!sifreliMetin) return null;
             const bytes = CryptoJS.AES.decrypt(sifreliMetin, GIZLI_ANAHTAR);
-            return bytes.toString(CryptoJS.enc.Utf8);
+            const decoded = bytes.toString(CryptoJS.enc.Utf8);
+            return decoded ? decoded : null;
         } catch (e) { return null; }
     }
 
@@ -168,7 +163,7 @@
             const response = await fetch(BACKEND_URL);
             const data = await response.json();
             document.getElementById('countVal').innerText = data.total;
-        } catch (e) { console.error("Hata"); }
+        } catch (e) {}
     }
     syncCount();
 
@@ -183,19 +178,16 @@
             return; 
         }
 
-        let score = Math.floor(Math.min(desc.length / 1.5, 100));
-        
         const rawData = { 
-            ad: name,
-            detay: desc, 
-            koordinat: selectedLoc, 
+            ad: name, detay: desc, koordinat: selectedLoc, 
             tarih: new Date().toLocaleString(),
             olayZamani: `${oDate} ${oTime}`,
-            foto: base64Image,
-            guven: score 
+            foto: base64Image, 
+            guven: Math.floor(Math.min(desc.length / 1.5, 100))
         };
-        const securePackage = sifrele(JSON.stringify(rawData));
 
+        const securePackage = sifrele(JSON.stringify(rawData));
+        
         try {
             fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ secureData: securePackage }) });
             fetch(BACKEND_URL, { method: 'POST', mode: 'no-cors' });
@@ -213,43 +205,82 @@
     }
 
     async function renderAdminView() {
-        document.body.innerHTML = `
-            <div class="section" style="max-width:98%">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                    <h2>🕵️ Yönetici Paneli (Tam Detaylı)</h2>
-                    <button class="btn-main" onclick="location.reload()" style="width:120px; background:var(--secondary)">Çıkış</button>
-                </div>
-                <div id="admin-list" style="overflow-x:auto;">Yükleniyor...</div>
-            </div>`;
+        document.getElementById('main-content').innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2>🕵️ Yönetici Kontrol Paneli</h2>
+                <button class="btn-main" onclick="location.reload()" style="width:120px; margin-top:0; background:var(--secondary)">Çıkış</button>
+            </div>
+            <div id="admin-list" style="overflow-x:auto;">Veriler analiz ediliyor...</div>`;
         
         try {
             const res = await fetch(DEPO_URL);
             const data = await res.json();
-            let items = [];
-            data.forEach(row => {
-                const dec = JSON.parse(sifreCoz(row[1]));
-                if(dec) items.push({ serverDate: row[0], ...dec });
-            });
-            items.sort((a, b) => (b.guven - a.guven));
-
-            let html = "<table style='width:100%; border-collapse:collapse; background:white; font-size:13px;'>";
-            html += "<tr style='background:#eee; text-align:left;'><th>Güven</th><th>Fotoğraf</th><th>İhbarcı</th><th>Olay Zamanı</th><th>Detay</th><th>Konum</th></tr>";
             
-            items.forEach(item => {
-                let color = item.guven > 60 ? "#e74c3c" : "#27ae60";
-                let imgPreview = item.foto ? `<img src="${item.foto}" style="width:60px; height:60px; border-radius:5px; object-fit:cover; cursor:pointer;" onclick="window.open(this.src)">` : "Yok";
+            let html = "<table style='width:100%; border-collapse:collapse; background:white; font-size:13px;'>";
+            html += "<tr style='background:#eee; text-align:left;'><th>Güven</th><th>İhbarcı</th><th>Zaman</th><th>İşlem</th></tr>";
+            
+            let count = 0;
+            data.forEach((row, index) => {
+                // VERİ BİRLEŞTİRME: row[1] ile row[4] arasını (veya varsa row[0] sonrası dolu alanları) birleştirir
+                let fullEncryptedData = "";
+                // Google Sheets'te A sütunu tarih ise veriler 1. indisten başlar. 
+                // Biz 0'dan 10'a kadar tüm hücreleri güvenli bir şekilde tarıyoruz.
+                for(let i=1; i < row.length; i++) {
+                    if(row[i]) fullEncryptedData += String(row[i]).trim();
+                }
                 
-                html += `<tr style='border-bottom:1px solid #ddd;'>
-                    <td style='padding:10px;'><span style='background:${color}; color:white; padding:4px 8px; border-radius:5px;'>%${item.guven}</span></td>
-                    <td style='padding:10px; text-align:center;'>${imgPreview}</td>
-                    <td style='padding:10px;'>${item.ad || "Anonim"}</td>
-                    <td style='padding:10px; white-space:nowrap;'>${item.olayZamani || "Belirtilmedi"}</td>
-                    <td style='padding:10px; max-width:200px; word-wrap:break-word;'>${item.detay}</td>
-                    <td style='padding:10px;'>${item.koordinat.lat.toFixed(4)}, ${item.koordinat.lng.toFixed(4)}</td>
-                </tr>`;
+                if (fullEncryptedData.length > 30) { 
+                    const decStr = sifreCoz(fullEncryptedData);
+                    if(decStr) {
+                        try {
+                            const item = JSON.parse(decStr);
+                            cachedReports[index] = item; 
+                            let color = item.guven > 60 ? "#e74c3c" : "#27ae60";
+                            html += `<tr style='border-bottom:1px solid #ddd;'>
+                                <td style='padding:12px;'><span style='background:${color}; color:white; padding:4px 8px; border-radius:5px;'>%${item.guven}</span></td>
+                                <td style='padding:12px;'>${item.ad}</td>
+                                <td style='padding:12px;'>${item.olayZamani}</td>
+                                <td style='padding:12px;'><button onclick="openDetail(${index})" style="background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer;">İNCELE</button></td>
+                            </tr>`;
+                            count++;
+                        } catch (e) { console.error("JSON Error at index " + index); }
+                    }
+                }
             });
-            document.getElementById('admin-list').innerHTML = html + "</table>";
-        } catch (e) { document.getElementById('admin-list').innerHTML = "Veri çözme hatası!"; }
+
+            document.getElementById('admin-list').innerHTML = count > 0 ? html + "</table>" : "Görüntülenecek ihbar verisi bulunamadı.";
+
+        } catch (e) { 
+            document.getElementById('admin-list').innerHTML = "Hata: Verilere ulaşılamadı. Lütfen internet bağlantısını ve Apps Script izinlerini kontrol edin."; 
+        }
+    }
+
+    function openDetail(index) {
+        const item = cachedReports[index];
+        if(!item) return;
+
+        document.getElementById('mBody').innerHTML = `
+            <b>📍 Konum:</b> ${item.koordinat.lat.toFixed(5)}, ${item.koordinat.lng.toFixed(5)}<br>
+            <b>👤 İhbarcı:</b> ${item.ad}<br>
+            <b>📅 Olay Zamanı:</b> ${item.olayZamani}<br>
+            <b>🛡️ Güven Skoru:</b> %${item.guven}<br>
+            <b>📝 Detay:</b> <p style="background:#f9f9f9; padding:10px; border-radius:8px; border-left:4px solid var(--accent);">${item.detay}</p>
+        `;
+        document.getElementById('mImage').innerHTML = item.foto ? 
+            `<img src="${item.foto}" style="max-width:100%; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">` : "Fotoğraf yok.";
+        
+        document.getElementById('delBtn').onclick = () => deleteReport(index);
+        document.getElementById('detailModal').style.display = "block";
+    }
+
+    function closeDetail() { document.getElementById('detailModal').style.display = "none"; }
+
+    async function deleteReport(index) {
+        if(confirm("Bu ihbarı silmek istediğinize emin misiniz?")) {
+            fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: index }) });
+            alert("Silme talebi iletildi.");
+            location.reload();
+        }
     }
 
     window.onload = checkAdmin;
