@@ -113,7 +113,6 @@
 </div>
 
 <script>
-    // URL'leri ve Anahtarı kontrol edin
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyFcIai4hAuiVG_M3q_vYnEQS5R1LFq14izib1MqoO2vXOe4Zi2IHR5mYuSOlPYEpye/exec";
     const DEPO_URL = "https://script.google.com/macros/s/AKfycbwEdBIzBrUYGq3cnNrmDpFgt3tBK5TTwlF33N9MvXMyj8aGoECbLALJJUrQCPo9n5XeoQ/exec"; 
     const GIZLI_ANAHTAR = "LegologlarFLL2024";
@@ -143,6 +142,35 @@
             };
             reader.readAsDataURL(file);
         }
+    }
+
+    // --- AKILLI GÜVEN SKORU ALGORİTMASI ---
+    function hesaplaAkilliGuven(metin) {
+        if (!metin || metin.length < 10) return 0;
+
+        let skor = 0;
+        const kelimeler = metin.trim().split(/\s+/);
+        
+        // 1. Kelime Sayısı Kontrolü
+        skor += Math.min(kelimeler.length * 8, 40); 
+
+        // 2. Rastgele Karakter Analizi (Entropi)
+        const benzersizHarf = new Set(metin.toLowerCase().replace(/[^a-z0-9]/g, "")).size;
+        if (benzersizHarf > 10) skor += 20;
+
+        // 3. Dil Yapısı (Sesli/Sessiz dengesi)
+        const sesliHarfler = metin.match(/[aeıioöuü]/gi);
+        const sesliOrani = sesliHarfler ? sesliHarfler.length / metin.length : 0;
+        if (sesliOrani > 0.2 && sesliOrani < 0.5) skor += 20;
+
+        // 4. Spam/Tekrar Engelleme
+        const tekrarKontrol = /(.)\1\1\1/.test(metin);
+        if (tekrarKontrol) skor -= 40;
+
+        // 5. Fotoğraf Bonus
+        if (base64Image) skor += 20;
+
+        return Math.max(0, Math.min(skor, 100));
     }
 
     function sifrele(metin) { return CryptoJS.AES.encrypt(metin, GIZLI_ANAHTAR).toString(); }
@@ -178,7 +206,7 @@
             tarih: new Date().toLocaleString(),
             olayZamani: `${oDate} ${oTime}`,
             foto: base64Image, 
-            guven: Math.floor(Math.min(desc.length / 1.5, 100))
+            guven: hesaplaAkilliGuven(desc) // Yeni akıllı sistem entegre edildi
         };
 
         const securePackage = sifrele(JSON.stringify(rawData));
@@ -216,7 +244,6 @@
             
             let count = 0;
             data.forEach((row, index) => {
-                // 7 PARÇA BİRLEŞTİRME MANTIĞI: row[1] ile row[7] arasını toplar
                 let fullEncryptedData = "";
                 for(let i = 1; i <= 7; i++) {
                     if(row[i]) fullEncryptedData += String(row[i]).trim();
@@ -262,7 +289,6 @@
         document.getElementById('mImage').innerHTML = item.foto ? 
             `<img src="${item.foto}" style="max-width:100%; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">` : "Fotoğraf yok.";
         
-        // SİL VE İNDİR BUTONLARI
         document.getElementById('modalFooter').innerHTML = `
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
                 <button onclick="downloadJSON(${index})" style="background:#2a9d8f; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer; font-weight:bold;">
