@@ -219,15 +219,16 @@
             let html = "<table style='width:100%; border-collapse:collapse; background:white; font-size:13px;'>";
             html += "<tr style='background:#eee; text-align:left;'><th>Güven</th><th>İhbarcı</th><th>Zaman</th><th>İşlem</th></tr>";
             
-            let count = 0;
-            data.forEach((row, index) => {
-                // VERİ BİRLEŞTİRME: row[1] ile row[4] arasını (veya varsa row[0] sonrası dolu alanları) birleştirir
+// renderAdminView içindeki döngü bölümü
+       data.forEach((row, index) => {
+        // row[0] Tarih'tir. row[1]'den row[7]'ye kadar olan hücreleri birleştiriyoruz.
                 let fullEncryptedData = "";
-                // Google Sheets'te A sütunu tarih ise veriler 1. indisten başlar. 
-                // Biz 0'dan 10'a kadar tüm hücreleri güvenli bir şekilde tarıyoruz.
-                for(let i=1; i < row.length; i++) {
-                    if(row[i]) fullEncryptedData += String(row[i]).trim();
-                }
+                for(let i = 1; i <= 7; i++) {
+        if(row[i]) {
+            fullEncryptedData += String(row[i]).trim();
+        }
+    }
+    
                 
                 if (fullEncryptedData.length > 30) { 
                     const decStr = sifreCoz(fullEncryptedData);
