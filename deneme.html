@@ -263,10 +263,16 @@
             
             let count = 0;
             data.forEach((row, index) => {
+    // row[0] Tarih sütunu, row[1...100] ise veri parçalarıdır.
                 let fullEncryptedData = "";
-                for(let i = 1; i <= 7; i++) {
-                    if(row[i]) fullEncryptedData += String(row[i]).trim();
-                }
+    
+    // Satırdaki tüm sütunları (indis 1'den sona kadar) birleştirir
+            for(let i = 1; i < row.length; i++) {
+                if(row[i] !== undefined && row[i] !== null) {
+                    fullEncryptedData += String(row[i]).trim();
+            }
+        }
+    
                 
                 if (fullEncryptedData.length > 30) { 
                     const decStr = sifreCoz(fullEncryptedData);
