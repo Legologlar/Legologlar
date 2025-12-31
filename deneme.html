@@ -43,8 +43,6 @@
 
         @media (max-width: 600px) {
             .section div[style*="display: grid"] { display: flex !important; flex-direction: column !important; gap: 15px !important; }
-            input[type="date"], input[type="time"] { width: 100% !important; min-height: 45px; margin-bottom: 5px; }
-            .form-group label { margin-top: 10px; }
         }
     </style>
 </head>
@@ -91,7 +89,7 @@
             <div id="map"></div>
         </div>
         
-        <button class="btn-main" onclick="submitReport()">İHBARI GÜVENLİ GÖNDER</button>
+        <button class="btn-main" onclick="submitReport()">İHBARI GÖNDER</button>
 
         <div class="quiz-bridge">
             <h3>Arkeoloji Uzmanlık Testi</h3>
@@ -110,15 +108,13 @@
         <div id="mBody" style="line-height: 1.8; margin-top: 15px;"></div>
         <div id="mImage" style="margin-top:20px; text-align:center;"></div>
         <hr>
-        <button id="delBtn" style="background:#e63946; color:white; border:none; padding:15px; width:100%; border-radius:10px; cursor:pointer; font-weight:bold; margin-top:10px;">
-            <i class="fas fa-trash"></i> BU İHBARI SİSTEMDEN KALDIR
-        </button>
+        <div id="modalFooter"></div>
     </div>
 </div>
 
 <script>
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyFcIai4hAuiVG_M3q_vYnEQS5R1LFq14izib1MqoO2vXOe4Zi2IHR5mYuSOlPYEpye/exec";
-    const DEPO_URL = "https://script.google.com/macros/s/AKfycbxww2-ThoWar93P94sxsl_3JxHAY7_RrXjYEfM2i0FVn2LLBozDkkTu6MiU-wCrEQwLtg/exec"; 
+    const DEPO_URL = "https://script.google.com/macros/s/AKfycbwEdBIzBrUYGq3cnNrmDpFgt3tBK5TTwlF33N9MvXMyj8aGoECbLALJJUrQCPo9n5XeoQ/exec"; 
     const GIZLI_ANAHTAR = "LegologlarFLL2024";
 
     let base64Image = "";
@@ -148,13 +144,59 @@
         }
     }
 
+    // --- AKILLI GÜVEN SKORU ALGORİTMASI ---
+    function hesaplaAkilliGuven(metin) {
+    if (!metin || metin.length < 15) return 0; // Çok kısa metinlere 0 puan
+
+    let skor = 0;
+    const temizMetin = metin.toLowerCase().trim();
+    const kelimeler = temizMetin.split(/\s+/);
+    
+    // 1. ANLAMSIZLIK KONTROLÜ (Sessiz Harf Yığılması)
+    // Türkçe ve genel dillerde 4-5 sessiz harf yan yana gelmez (örn: "asdfgh")
+    const anlamsizDizi = /[^aeıioöuü\s]{5,}/g.test(temizMetin);
+    if (anlamsizDizi) return 10; // Eğer rastgele tuşlama varsa skor direkt 10'a düşer.
+
+    // 2. KELİME ANALİZİ
+    // Gerçek bir ihbar en az 4 kelime olmalı
+    if (kelimeler.length >= 4) skor += 30;
+    else if (kelimeler.length >= 2) skor += 10;
+
+    // 3. SESLİ HARF DENGESİ (Doğal Dil Kontrolü)
+    // Türkçe'de sesli harf oranı genelde %30-%45 arasındadır.
+    const sesliHarfler = temizMetin.match(/[aeıioöuü]/g);
+    const sesliOrani = sesliHarfler ? sesliHarfler.length / temizMetin.length : 0;
+    if (sesliOrani > 0.25 && sesliOrani < 0.50) {
+        skor += 30;
+    } else {
+        skor -= 20; // Oran çok düşükse (sessiz harf yığını) veya çok yüksekse ceza
+    }
+
+    // 4. TEKRAR EDEN KARAKTER CEZASI (Örn: "aaaa", "....")
+    const tekrarKontrol = /(.)\1\1/.test(temizMetin);
+    if (tekrarKontrol) skor -= 30;
+
+    // 5. ANAHTAR KELİME BONUSU (İçerik Analizi)
+    const anahtarKelimeler = ["kazı", "kepçe", "gece", "buldum", "tarihi", "lahit", "define", "şüpheli"];
+    let anahtarPuan = 0;
+    anahtarKelimeler.forEach(kelime => {
+        if (temizMetin.includes(kelime)) anahtarPuan += 10;
+    });
+    skor += Math.min(anahtarPuan, 20);
+
+    // 6. FOTOĞRAF KONTROLÜ
+    // Fotoğraf varsa puan ekle ama metin kötüyse fotoğraf tek başına kurtarmasın
+    if (base64Image) {
+        skor += (skor > 20) ? 20 : 5; 
+    }
+
+    return Math.max(0, Math.min(skor, 100));
+}
     function sifrele(metin) { return CryptoJS.AES.encrypt(metin, GIZLI_ANAHTAR).toString(); }
     function sifreCoz(sifreliMetin) {
         try {
-            if(!sifreliMetin) return null;
             const bytes = CryptoJS.AES.decrypt(sifreliMetin, GIZLI_ANAHTAR);
-            const decoded = bytes.toString(CryptoJS.enc.Utf8);
-            return decoded ? decoded : null;
+            return bytes.toString(CryptoJS.enc.Utf8);
         } catch (e) { return null; }
     }
 
@@ -183,7 +225,7 @@
             tarih: new Date().toLocaleString(),
             olayZamani: `${oDate} ${oTime}`,
             foto: base64Image, 
-            guven: Math.floor(Math.min(desc.length / 1.5, 100))
+            guven: hesaplaAkilliGuven(desc) // Yeni akıllı sistem entegre edildi
         };
 
         const securePackage = sifrele(JSON.stringify(rawData));
@@ -221,11 +263,8 @@
             
             let count = 0;
             data.forEach((row, index) => {
-                // VERİ BİRLEŞTİRME: row[1] ile row[4] arasını (veya varsa row[0] sonrası dolu alanları) birleştirir
                 let fullEncryptedData = "";
-                // Google Sheets'te A sütunu tarih ise veriler 1. indisten başlar. 
-                // Biz 0'dan 10'a kadar tüm hücreleri güvenli bir şekilde tarıyoruz.
-                for(let i=1; i < row.length; i++) {
+                for(let i = 1; i <= 7; i++) {
                     if(row[i]) fullEncryptedData += String(row[i]).trim();
                 }
                 
@@ -243,15 +282,14 @@
                                 <td style='padding:12px;'><button onclick="openDetail(${index})" style="background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer;">İNCELE</button></td>
                             </tr>`;
                             count++;
-                        } catch (e) { console.error("JSON Error at index " + index); }
+                        } catch (e) { console.error("JSON Error"); }
                     }
                 }
             });
 
             document.getElementById('admin-list').innerHTML = count > 0 ? html + "</table>" : "Görüntülenecek ihbar verisi bulunamadı.";
-
         } catch (e) { 
-            document.getElementById('admin-list').innerHTML = "Hata: Verilere ulaşılamadı. Lütfen internet bağlantısını ve Apps Script izinlerini kontrol edin."; 
+            document.getElementById('admin-list').innerHTML = "Hata: Verilere ulaşılamadı."; 
         }
     }
 
@@ -266,22 +304,46 @@
             <b>🛡️ Güven Skoru:</b> %${item.guven}<br>
             <b>📝 Detay:</b> <p style="background:#f9f9f9; padding:10px; border-radius:8px; border-left:4px solid var(--accent);">${item.detay}</p>
         `;
+        
         document.getElementById('mImage').innerHTML = item.foto ? 
             `<img src="${item.foto}" style="max-width:100%; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">` : "Fotoğraf yok.";
         
-        document.getElementById('delBtn').onclick = () => deleteReport(index);
+        document.getElementById('modalFooter').innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                <button onclick="downloadJSON(${index})" style="background:#2a9d8f; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer; font-weight:bold;">
+                    <i class="fas fa-file-download"></i> JSON İNDİR
+                </button>
+                <button onclick="deleteReport(${index})" style="background:#e63946; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer; font-weight:bold;">
+                    <i class="fas fa-trash"></i> İHBARI SİL
+                </button>
+            </div>
+        `;
+        
         document.getElementById('detailModal').style.display = "block";
     }
 
-    function closeDetail() { document.getElementById('detailModal').style.display = "none"; }
+    function downloadJSON(index) {
+        const data = cachedReports[index];
+        const fileName = `ihbar_${index + 1}.json`;
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.click();
+    }
 
     async function deleteReport(index) {
         if(confirm("Bu ihbarı silmek istediğinize emin misiniz?")) {
-            fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: index }) });
-            alert("Silme talebi iletildi.");
-            location.reload();
+            try {
+                await fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: index }) });
+                alert("Silme talebi iletildi.");
+                location.reload();
+            } catch (e) { alert("Hata!"); }
         }
     }
+
+    function closeDetail() { document.getElementById('detailModal').style.display = "none"; }
 
     window.onload = checkAdmin;
 </script>
