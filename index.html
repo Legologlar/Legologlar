@@ -262,19 +262,24 @@
             html += "<tr style='background:#eee; text-align:left;'><th>Güven</th><th>İhbarcı</th><th>Zaman</th><th>İşlem</th></tr>";
             
             let count = 0;
-            data.forEach((row, index) => {
-    // row[0] Tarih sütunu, row[1...100] ise veri parçalarıdır.
-                let fullEncryptedData = "";
+                data.forEach((row, index) => {
+                    let fullEncryptedData = "";
     
-    // Satırdaki tüm sütunları (indis 1'den sona kadar) birleştirir
-            for(let i = 1; i < row.length; i++) {
-                if(row[i] !== undefined && row[i] !== null) {
-                    fullEncryptedData += String(row[i]).trim();
-            }
-        }
+    // row[0] Tarih, row[1]'den row[100]'e kadar veriler
+    // 101 sütunluk yapıda i < 101 olmalı (veya row.length)
+                    for(let i = 1; i < row.length; i++) {
+                        if (row[i] !== undefined && row[i] !== null && row[i] !== "") {
+                            let chunk = String(row[i]).trim();
+            // Apps Script'te eklediğimiz tek tırnağı (') temizliyoruz
+                            if (chunk.startsWith("'")) {
+                            chunk = chunk.substring(1);
+                            }
+                            fullEncryptedData += chunk;
+                            }
+    }
     
                 
-                if (fullEncryptedData.length > 30) { 
+                if (fullEncryptedData.length > 50) { 
                     const decStr = sifreCoz(fullEncryptedData);
                     if(decStr) {
                         try {
