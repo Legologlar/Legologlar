@@ -18,9 +18,17 @@
         .options { list-style: none; padding: 0; }
         .options li { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 12px; cursor: pointer; border: 2px solid #eee; transition: 0.2s; font-weight: 500; }
         .options li:hover { background: var(--light-blue); border-color: var(--primary); }
-        .btn-action { background: var(--secondary); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-action { background: var(--secondary); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; margin-top: 15px; }
         .back-link { text-decoration: none; color: var(--earth); font-weight: bold; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; transition: 0.3s; }
         .back-link:hover { opacity: 0.7; }
+
+        /* Yeni Analiz Raporu Stilleri */
+        .analysis-container { text-align: left; margin-top: 20px; max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 12px; padding: 15px; background: #fafafa; }
+        .analysis-item { padding: 10px; border-bottom: 1px solid #eee; margin-bottom: 5px; }
+        .analysis-item:last-child { border-bottom: none; }
+        .q-text { font-weight: bold; display: block; margin-bottom: 5px; font-size: 14px; }
+        .ans-wrong { color: #d62828; font-size: 13px; font-weight: 600; }
+        .ans-correct { color: #2a9d8f; font-size: 13px; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -43,14 +51,17 @@
     <div id="result-screen" style="display:none; text-align:center;">
         <h2>Test Tamamlandı!</h2>
         <div id="final-score" style="font-size: 40px; font-weight: bold; color: var(--earth); margin: 20px 0;"></div>
-        <p id="result-text" style="margin-bottom: 20px;"></p>
-        <a href="index.html" class="btn-action">İhbar Sayfasına Dön</a>
+        <div id="result-text"></div> <a href="index.html" class="btn-action">İhbar Sayfasına Dön</a>
     </div>
 </div>
 
 <script>
-    // Önceki quiz script'inin aynısı burada devam edecek...
-    let quizBank = []; let selectedQuestions = []; let currentIdx = 0; let score = 0;
+    let quizBank = []; 
+    let selectedQuestions = []; 
+    let currentIdx = 0; 
+    let score = 0;
+    let userHistory = []; // Hataları takip etmek için yeni dizi
+
     async function initQuiz() {
         try {
             const response = await fetch('sorular.json');
@@ -59,6 +70,7 @@
             showQuestion();
         } catch (e) { document.getElementById('question-text').innerText = "Hata: Sorular yüklenemedi."; }
     }
+
     function showQuestion() {
         const q = selectedQuestions[currentIdx];
         document.getElementById('q-counter').innerText = `Soru: ${currentIdx+1}/${selectedQuestions.length}`;
@@ -66,22 +78,54 @@
         document.getElementById('question-text').innerText = q[0];
         const list = document.getElementById('options-list');
         list.innerHTML = "";
+        
         for(let i=1; i<=3; i++) {
             const li = document.createElement('li');
             li.innerText = q[i];
             li.onclick = () => {
-                if(i-1 === q[4]) score++;
+                const correctIdx = q[4];
+                const isCorrect = (i-1 === correctIdx);
+
+                // Geçmişi kaydet
+                userHistory.push({
+                    question: q[0],
+                    userAns: q[i],
+                    correctAns: q[correctIdx + 1],
+                    correct: isCorrect
+                });
+
+                if(isCorrect) score++;
+                
                 currentIdx++;
                 if(currentIdx < selectedQuestions.length) showQuestion(); else showResult();
             };
             list.appendChild(li);
         }
     }
+
     function showResult() {
         document.getElementById('quiz-screen').style.display='none';
         document.getElementById('result-screen').style.display='block';
         document.getElementById('final-score').innerText = `${score} / ${selectedQuestions.length}`;
+
+        // Hata Analiz Raporunu Oluştur
+        let reportHtml = '<h3>Soru Analizi</h3><div class="analysis-container">';
+        userHistory.forEach((item, idx) => {
+            reportHtml += `
+                <div class="analysis-item">
+                    <span class="q-text">${idx+1}. ${item.question}</span>
+                    ${item.correct ? 
+                        `<span class="ans-correct"><i class="fas fa-check"></i> Doğru: ${item.userAns}</span>` : 
+                        `<span class="ans-wrong"><i class="fas fa-times"></i> Senin Cevabın: ${item.userAns}</span><br>
+                         <span class="ans-correct"><i class="fas fa-check"></i> Doğru Cevap: ${item.correctAns}</span>`
+                    }
+                </div>`;
+        });
+        reportHtml += '</div>';
+        
+        document.getElementById('result-text').innerHTML = reportHtml;
     }
+
     initQuiz();
 </script>
 </body>
