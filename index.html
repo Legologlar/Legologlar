@@ -41,10 +41,6 @@
         .modal-content { background: white; margin: 3% auto; padding: 25px; border-radius: 15px; width: 90%; max-width: 700px; position: relative; color: #333; }
         .close-modal { position: absolute; right: 20px; top: 10px; font-size: 30px; cursor: pointer; }
 
-        .alert-message { padding: 15px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; }
-        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alert-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-
         @media (max-width: 600px) {
             .section div[style*="display: grid"] { display: flex !important; flex-direction: column !important; gap: 15px !important; }
         }
@@ -58,25 +54,23 @@
         <p>İhbar Sistemi & Fotoğraflı Kanıt Analizi</p>
     </header>
 
-    <!-- Bilgilendirme Alanı (Taşındı) -->
-   <div class="section" id="info-section">
-    <h2 style="text-align: center; color: var(--secondary); margin-bottom: 20px;">
-        <i class="fas fa-landmark"></i> Ortak Mirasımızı Koruma Sorumluluğu
-    </h2>
-    </div>
-    <p style="line-height: 1.7; text-align: justify;">
-        Türkiye, dünyanın en zengin arkeolojik miraslarından birine ev sahipliği yapmaktadır. Ancak bu miras, <strong>definecilik ve tarihi eser kaçakçılığı</strong> nedeniyle büyük bir tehdit altındadır. İzinsiz yapılan her kazı, bir suç olmasının yanı sıra, bir eserin bilimsel değerini ve ait olduğu tarihi bağlamı geri dönülmez şekilde yok eder. Bu portal, bu tahribata karşı durmak için bir araçtır.
-    </p>
-    <p style="line-height: 1.7; text-align: justify; margin-top: 15px;">
-        Kaçak kazıların en yaygın aracı olan metal dedektörlerinin kontrolsüz kullanımı, sorunun temelini oluşturmaktadır. Bir eserin değeri yalnızca maddiyatı değil, bize anlattığı hikayedir. Bağlamından koparılan her eser, insanlık hafızasından silinmiş bir sayfadır.
-    </p>
-    <div style="background: #f0f8ff; padding: 15px 20px; border-radius: 10px; border-left: 4px solid var(--accent); margin-top: 25px; text-align: center;">
-        <h4 style="margin-top: 0; color: var(--secondary);"><i class="fas fa-bullhorn"></i> Sizin de Sorumluluğunuz Var!</h4>
-        <p style="margin-bottom:0;">Çevrenizde şüpheli bir kazı, dedektörle arama veya tarihi eser satışı gördüğünüzde sessiz kalmayın. Bu portalı kullanarak <strong>anonim veya kimliğinizle</strong> durumu bildirmek, ortak mirasımızı korumak için atacağınız en önemli adımlardan biridir.</p>
-    </div>
-    <p style="text-align: center; margin-top: 25px; border-top: 2px dashed #ccc; padding-top: 25px;">
-        Arkeoloji bilginizi test etmek isterseniz <a href="quiz.html" style="text-decoration:none; color: var(--earth); font-weight: bold;">Uzmanlık Testi</a> sayfamızı ziyaret edebilirsiniz.
-    </p>
+    <div class="section" id="info-section">
+        <h2 style="text-align: center; color: var(--secondary); margin-bottom: 20px;">
+            <i class="fas fa-landmark"></i> Ortak Mirasımızı Koruma Sorumluluğu
+        </h2>
+        <p style="line-height: 1.7; text-align: justify;">
+            Türkiye, dünyanın en zengin arkeolojik miraslarından birine ev sahipliği yapmaktadır. Ancak bu miras, <strong>definecilik ve tarihi eser kaçakçılığı</strong> nedeniyle büyük bir tehdit altındadır. İzinsiz yapılan her kazı, bir suç olmasının yanı sıra, bir eserin bilimsel değerini ve ait olduğu tarihi bağlamı geri dönülmez şekilde yok eder. Bu portal, bu tahribata karşı durmak için bir araçtır.
+        </p>
+        <p style="line-height: 1.7; text-align: justify; margin-top: 15px;">
+            Kaçak kazıların en yaygın aracı olan metal dedektörlerinin kontrolsüz kullanımı, sorunun temelini oluşturmaktadır. Bir eserin değeri yalnızca maddiyatı değil, bize anlattığı hikayedir. Bağlamından koparılan her eser, insanlık hafızasından silinmiş bir sayfadır.
+        </p>
+        <div style="background: #f0f8ff; padding: 15px 20px; border-radius: 10px; border-left: 4px solid var(--accent); margin-top: 25px; text-align: center;">
+            <h4 style="margin-top: 0; color: var(--secondary);"><i class="fas fa-bullhorn"></i> Sizin de Sorumluluğunuz Var!</h4>
+            <p style="margin-bottom:0;">Çevrenizde şüpheli bir kazı, dedektörle arama veya tarihi eser satışı gördüğünüzde sessiz kalmayın. Bu portalı kullanarak <strong>anonim veya kimliğinizle</strong> durumu bildirmek, ortak mirasımızı korumak için atacağınız en önemli adımlardan biridir.</p>
+        </div>
+        <p style="text-align: center; margin-top: 25px; border-top: 2px dashed #ccc; padding-top: 25px;">
+            Arkeoloji bilginizi test etmek isterseniz <a href="quiz.html" style="text-decoration:none; color: var(--earth); font-weight: bold;">Uzmanlık Testi</a> sayfamızı ziyaret edebilirsiniz.
+        </p>
     </div>
 
     <div id="main-content" class="section">
@@ -116,7 +110,7 @@
         
         <button class="btn-main" onclick="submitReport()">İHBARI GÖNDER</button>
 
-        <div class="quiz-bridge">
+        <div class="quiz-bridge" id="quiz-bridge">
             <h3>Arkeoloji Uzmanlık Testi</h3>
             <a href="quiz.html" class="btn-quiz-go">
                 <i class="fas fa-graduation-cap"></i> Quize Başla
@@ -124,7 +118,6 @@
         </div>
     </div>
 </div>
-
 
 <div id="detailModal" class="modal">
     <div class="modal-content">
@@ -157,109 +150,55 @@
     });
 
     function handleFile(input) {
-    const file = input.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const img = new Image();
-            img.onload = function () {
-                // --- RESIZING AYARLARI ---
-                const maxWidth = 1024; // Maksimum genişlik (1024px idealdir)
-                let width = img.width;
-                let height = img.height;
-
-                if (width > maxWidth) {
-                    height = (maxWidth / width) * height;
-                    width = maxWidth;
-                }
-
-                // Canvas oluşturup üzerine resmi çiziyoruz
-                const canvas = document.createElement('canvas');
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-
-                // Resmi JPEG formatında ve %70 kalitede sıkıştır
-                // Bu işlem 10MB'lık resmi yaklaşık 200-300KB'a düşürür
-                base64Image = canvas.toDataURL('image/jpeg', 0.7);
-
-                // Arayüzde önizlemeyi göster
-                const preview = document.getElementById('imagePreview');
-                preview.src = base64Image;
-                preview.style.display = "block";
-                document.getElementById('upload-text').style.display = "none";
-                
-                console.log("Resim optimize edildi. Yeni boyut: " + Math.round(base64Image.length / 1024) + " KB");
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = new Image();
+                img.onload = function () {
+                    const maxWidth = 1024;
+                    let width = img.width, height = img.height;
+                    if (width > maxWidth) { height = (maxWidth / width) * height; width = maxWidth; }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    base64Image = canvas.toDataURL('image/jpeg', 0.7);
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = base64Image;
+                    preview.style.display = "block";
+                    document.getElementById('upload-text').style.display = "none";
+                };
+                img.src = e.target.result;
             };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
+            reader.readAsDataURL(file);
+        }
     }
-}
 
-    // --- AKILLI GÜVEN SKORU ALGORİTMASI ---
     function hesaplaAkilliGuven(metin) {
-    if (!metin || metin.length < 15) return 0; // Çok kısa metinlere 0 puan
-
-    let skor = 0;
-    const temizMetin = metin.toLowerCase().trim();
-    const kelimeler = temizMetin.split(/\s+/);
-    
-    // 1. ANLAMSIZLIK KONTROLÜ (Sessiz Harf Yığılması)
-    // Türkçe ve genel dillerde 4-5 sessiz harf yan yana gelmez (örn: "asdfgh")
-    const anlamsizDizi = /[^aeıioöuü\s]{5,}/g.test(temizMetin);
-    if (anlamsizDizi) return 10; // Eğer rastgele tuşlama varsa skor direkt 10'a düşer.
-
-    // 2. KELİME ANALİZİ
-    // Gerçek bir ihbar en az 4 kelime olmalı
-    if (kelimeler.length >= 4) skor += 30;
-    else if (kelimeler.length >= 2) skor += 10;
-
-    // 3. SESLİ HARF DENGESİ (Doğal Dil Kontrolü)
-    // Türkçe'de sesli harf oranı genelde %30-%45 arasındadır.
-    const sesliHarfler = temizMetin.match(/[aeıioöuü]/g);
-    const sesliOrani = sesliHarfler ? sesliHarfler.length / temizMetin.length : 0;
-    if (sesliOrani > 0.25 && sesliOrani < 0.50) {
-        skor += 30;
-    } else {
-        skor -= 20; // Oran çok düşükse (sessiz harf yığını) veya çok yüksekse ceza
+        if (!metin || metin.length < 15) return 0;
+        let skor = 0;
+        const temizMetin = metin.toLowerCase().trim();
+        if (/[^aeıioöuü\s]{5,}/g.test(temizMetin)) return 10;
+        const kelimeler = temizMetin.split(/\s+/);
+        skor += kelimeler.length >= 4 ? 30 : 10;
+        const sesliHarfler = temizMetin.match(/[aeıioöuü]/g);
+        const sesliOrani = sesliHarfler ? sesliHarfler.length / temizMetin.length : 0;
+        skor += (sesliOrani > 0.25 && sesliOrani < 0.50) ? 30 : -20;
+        if (/(.)\1\1/.test(temizMetin)) skor -= 30;
+        const anahtar = ["kazı", "kepçe", "gece", "buldum", "tarihi", "lahit", "define", "şüpheli"];
+        anahtar.forEach(k => { if (temizMetin.includes(k)) skor += 10; });
+        if (base64Image) skor += (skor > 20) ? 20 : 5;
+        return Math.max(0, Math.min(skor, 100));
     }
 
-    // 4. TEKRAR EDEN KARAKTER CEZASI (Örn: "aaaa", "....")
-    const tekrarKontrol = /(.)\1\1/.test(temizMetin);
-    if (tekrarKontrol) skor -= 30;
-
-    // 5. ANAHTAR KELİME BONUSU (İçerik Analizi)
-    const anahtarKelimeler = ["kazı", "kepçe", "gece", "buldum", "tarihi", "lahit", "define", "şüpheli"];
-    let anahtarPuan = 0;
-    anahtarKelimeler.forEach(kelime => {
-        if (temizMetin.includes(kelime)) anahtarPuan += 10;
-    });
-    skor += Math.min(anahtarPuan, 20);
-
-    // 6. FOTOĞRAF KONTROLÜ
-    // Fotoğraf varsa puan ekle ama metin kötüyse fotoğraf tek başına kurtarmasın
-    if (base64Image) {
-        skor += (skor > 20) ? 20 : 5; 
-    }
-
-    return Math.max(0, Math.min(skor, 100));
-}
     function sifrele(metin) { return CryptoJS.AES.encrypt(metin, GIZLI_ANAHTAR).toString(); }
     function sifreCoz(sifreliMetin) {
-        try {
-            const bytes = CryptoJS.AES.decrypt(sifreliMetin, GIZLI_ANAHTAR);
-            return bytes.toString(CryptoJS.enc.Utf8);
-        } catch (e) { return null; }
+        try { const bytes = CryptoJS.AES.decrypt(sifreliMetin, GIZLI_ANAHTAR); return bytes.toString(CryptoJS.enc.Utf8); } catch (e) { return null; }
     }
 
     async function syncCount() {
-        try {
-            const response = await fetch(BACKEND_URL);
-            const data = await response.json();
-            document.getElementById('countVal').innerText = data.total;
-        } catch (e) {}
+        try { const r = await fetch(BACKEND_URL); const d = await r.json(); document.getElementById('countVal').innerText = d.total; } catch (e) {}
     }
     syncCount();
 
@@ -268,22 +207,9 @@
         const name = document.getElementById('rName').value || "Anonim";
         const oDate = document.getElementById('eventDate').value;
         const oTime = document.getElementById('eventTime').value;
-
-        if(!selectedLoc || desc.length < 5) { 
-            alert("Lütfen haritadan konum seçin ve açıklama yazın!"); 
-            return; 
-        }
-
-        const rawData = { 
-            ad: name, detay: desc, koordinat: selectedLoc, 
-            tarih: new Date().toLocaleString(),
-            olayZamani: `${oDate} ${oTime}`,
-            foto: base64Image, 
-            guven: hesaplaAkilliGuven(desc) // Yeni akıllı sistem entegre edildi
-        };
-
+        if(!selectedLoc || desc.length < 5) { alert("Lütfen haritadan konum seçin ve açıklama yazın!"); return; }
+        const rawData = { ad: name, detay: desc, koordinat: selectedLoc, tarih: new Date().toLocaleString(), olayZamani: `${oDate} ${oTime}`, foto: base64Image, guven: hesaplaAkilliGuven(desc) };
         const securePackage = sifrele(JSON.stringify(rawData));
-        
         try {
             fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ secureData: securePackage }) });
             fetch(BACKEND_URL, { method: 'POST', mode: 'no-cors' });
@@ -301,6 +227,13 @@
     }
 
     async function renderAdminView() {
+        // --- GEREKSİZLERİ GİZLEME ---
+        const infoSec = document.getElementById('info-section');
+        if(infoSec) infoSec.style.display = 'none';
+        
+        const quizBridge = document.getElementById('quiz-bridge');
+        if(quizBridge) quizBridge.style.display = 'none';
+
         document.getElementById('main-content').innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <h2>🕵️ Yönetici Kontrol Paneli</h2>
@@ -311,28 +244,18 @@
         try {
             const res = await fetch(DEPO_URL);
             const data = await res.json();
-            
             let html = "<table style='width:100%; border-collapse:collapse; background:white; font-size:13px;'>";
             html += "<tr style='background:#eee; text-align:left;'><th>Güven</th><th>İhbarcı</th><th>Zaman</th><th>İşlem</th></tr>";
-            
             let count = 0;
-                data.forEach((row, index) => {
-                    let fullEncryptedData = "";
-    
-    // row[0] Tarih, row[1]'den row[100]'e kadar veriler
-    // 101 sütunluk yapıda i < 101 olmalı (veya row.length)
-                    for(let i = 1; i < row.length; i++) {
-                        if (row[i] !== undefined && row[i] !== null && row[i] !== "") {
-                            let chunk = String(row[i]).trim();
-            // Apps Script'te eklediğimiz tek tırnağı (') temizliyoruz
-                            if (chunk.startsWith("'")) {
-                            chunk = chunk.substring(1);
-                            }
-                            fullEncryptedData += chunk;
-                            }
-    }
-    
-                
+            data.forEach((row, index) => {
+                let fullEncryptedData = "";
+                for(let i = 1; i < row.length; i++) {
+                    if (row[i]) {
+                        let chunk = String(row[i]).trim();
+                        if (chunk.startsWith("'")) chunk = chunk.substring(1);
+                        fullEncryptedData += chunk;
+                    }
+                }
                 if (fullEncryptedData.length > 50) { 
                     const decStr = sifreCoz(fullEncryptedData);
                     if(decStr) {
@@ -347,21 +270,17 @@
                                 <td style='padding:12px;'><button onclick="openDetail(${index})" style="background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer;">İNCELE</button></td>
                             </tr>`;
                             count++;
-                        } catch (e) { console.error("JSON Error"); }
+                        } catch (e) {}
                     }
                 }
             });
-
             document.getElementById('admin-list').innerHTML = count > 0 ? html + "</table>" : "Görüntülenecek ihbar verisi bulunamadı.";
-        } catch (e) { 
-            document.getElementById('admin-list').innerHTML = "Hata: Verilere ulaşılamadı."; 
-        }
+        } catch (e) { document.getElementById('admin-list').innerHTML = "Hata: Verilere ulaşılamadı."; }
     }
 
     function openDetail(index) {
         const item = cachedReports[index];
         if(!item) return;
-
         document.getElementById('mBody').innerHTML = `
             <b>📍 Konum:</b> ${item.koordinat.lat.toFixed(5)}, ${item.koordinat.lng.toFixed(5)}<br>
             <b>👤 İhbarcı:</b> ${item.ad}<br>
@@ -369,47 +288,29 @@
             <b>🛡️ Güven Skoru:</b> %${item.guven}<br>
             <b>📝 Detay:</b> <p style="background:#f9f9f9; padding:10px; border-radius:8px; border-left:4px solid var(--accent);">${item.detay}</p>
         `;
-        
-        document.getElementById('mImage').innerHTML = item.foto ? 
-            `<img src="${item.foto}" style="max-width:100%; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">` : "Fotoğraf yok.";
-        
+        document.getElementById('mImage').innerHTML = item.foto ? `<img src="${item.foto}" style="max-width:100%; border-radius:10px;">` : "Fotoğraf yok.";
         document.getElementById('modalFooter').innerHTML = `
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
-                <button onclick="downloadJSON(${index})" style="background:#2a9d8f; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer; font-weight:bold;">
-                    <i class="fas fa-file-download"></i> JSON İNDİR
-                </button>
-                <button onclick="deleteReport(${index})" style="background:#e63946; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer; font-weight:bold;">
-                    <i class="fas fa-trash"></i> İHBARI SİL
-                </button>
-            </div>
-        `;
-        
+                <button onclick="downloadJSON(${index})" style="background:#2a9d8f; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer; font-weight:bold;">JSON İNDİR</button>
+                <button onclick="deleteReport(${index})" style="background:#e63946; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer; font-weight:bold;">İHBARI SİL</button>
+            </div>`;
         document.getElementById('detailModal').style.display = "block";
     }
 
     function downloadJSON(index) {
         const data = cachedReports[index];
-        const fileName = `ihbar_${index + 1}.json`;
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        link.click();
+        const link = document.createElement('a'); link.href = url; link.download = `ihbar_${index + 1}.json`; link.click();
     }
 
     async function deleteReport(index) {
         if(confirm("Bu ihbarı silmek istediğinize emin misiniz?")) {
-            try {
-                await fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: index }) });
-                alert("Silme talebi iletildi.");
-                location.reload();
-            } catch (e) { alert("Hata!"); }
+            try { await fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: index }) }); alert("Silme talebi iletildi."); location.reload(); } catch (e) { alert("Hata!"); }
         }
     }
 
     function closeDetail() { document.getElementById('detailModal').style.display = "none"; }
-
     window.onload = checkAdmin;
 </script>
 </body>
