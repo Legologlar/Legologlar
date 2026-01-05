@@ -27,14 +27,14 @@
         label { font-weight: bold; margin-bottom: 8px; display: block; }
         input, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--light-blue); box-sizing: border-box; font-family: inherit; font-size: 14px; }
         
-        /* Gelişmiş Tekli Yükleme Alanı */
-        .upload-area { border: 2px dashed var(--accent); border-radius: 15px; padding: 25px; text-align: center; background: #fafafa; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
+        /* Gelişmiş Tekli Yükleme Alanı ve Önizleme */
+        .upload-area { border: 2px dashed var(--accent); border-radius: 15px; padding: 20px; text-align: center; background: #fafafa; cursor: pointer; transition: 0.3s; margin-bottom: 15px; }
         .upload-area:hover { background: var(--light-blue); }
         
         .preview-container { display: flex; gap: 10px; margin-top: 15px; justify-content: center; flex-wrap: wrap; }
         .preview-item { position: relative; width: 80px; height: 80px; border-radius: 10px; border: 2px solid var(--accent); overflow: hidden; }
         .preview-item img { width: 100%; height: 100%; object-fit: cover; }
-        .remove-img { position: absolute; top: 0; right: 0; background: rgba(255,0,0,0.7); color: white; border: none; font-size: 12px; cursor: pointer; padding: 2px 5px; }
+        .remove-img { position: absolute; top: 2px; right: 2px; background: rgba(230, 57, 70, 0.9); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         .btn-main { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
         .btn-main:hover { background: var(--secondary); }
@@ -64,7 +64,17 @@
             <i class="fas fa-landmark"></i> Ortak Mirasımızı Koruma Sorumluluğu
         </h2>
         <p style="line-height: 1.7; text-align: justify;">
-            Lütfen şüpheli faaliyetleri 3 fotoğrafa kadar kanıt yükleyerek bildirin. Fotoğraflarınız uzmanlar tarafından incelenerek güven skoru atanacaktır.
+            Türkiye, dünyanın en zengin arkeolojik miraslarından birine ev sahipliği yapmaktadır. Ancak bu miras, <strong>definecilik ve tarihi eser kaçakçılığı</strong> nedeniyle büyük bir tehdit altındadır. İzinsiz yapılan her kazı, bir suç olmasının yanı sıra, bir eserin bilimsel değerini ve ait olduğu tarihi bağlamı geri dönülmez şekilde yok eder. Bu portal, bu tahribata karşı durmak için bir araçtır.
+        </p>
+        <p style="line-height: 1.7; text-align: justify; margin-top: 15px;">
+            Kaçak kazıların en yaygın aracı olan metal dedektörlerinin kontrolsüz kullanımı, sorunun temelini oluşturmaktadır. Bir eserin değeri yalnızca maddiyatı değil, bize anlattığı hikayedir. Bağlamından koparılan her eser, insanlık hafızasından silinmiş bir sayfadır.
+        </p>
+        <div style="background: #f0f8ff; padding: 15px 20px; border-radius: 10px; border-left: 4px solid var(--accent); margin-top: 25px; text-align: center;">
+            <h4 style="margin-top: 0; color: var(--secondary);"><i class="fas fa-bullhorn"></i> Sizin de Sorumluluğunuz Var!</h4>
+            <p style="margin-bottom:0;">Çevrenizde şüpheli bir kazı, dedektörle arama veya tarihi eser satışı gördüğünüzde sessiz kalmayın. Bu portalı kullanarak <strong>anonim veya kimliğinizle</strong> durumu bildirmek, ortak mirasımızı korumak için atacağınız en önemli adımlardan biridir.</p>
+        </div>
+        <p style="text-align: center; margin-top: 25px; border-top: 2px dashed #ccc; padding-top: 25px;">
+            Arkeoloji bilginizi test etmek isterseniz <a href="quiz.html" style="text-decoration:none; color: var(--earth); font-weight: bold;">Uzmanlık Testi</a> sayfamızı ziyaret edebilirsiniz.
         </p>
     </div>
 
@@ -88,12 +98,14 @@
 
         <div class="form-group">
             <label>Kanıt Fotoğrafları (En fazla 3 adet)</label>
-            <div class="upload-area" onclick="document.getElementById('multiInput').click()">
-                <i class="fas fa-cloud-upload-alt" style="font-size: 30px; color: var(--accent);"></i>
-                <p id="upload-status">Tıkla ve Fotoğrafları Seç (Max 3)</p>
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="handleMultipleFiles(this)">
+                <div id="upload-instruction">
+                    <i class="fas fa-camera" style="font-size: 24px; color: var(--accent);"></i>
+                    <p id="upload-status-text">Tıkla ve Fotoğraf Seç / Çek (Max 3)</p>
+                </div>
                 <div class="preview-container" id="previewContainer"></div>
             </div>
-            <input type="file" id="multiInput" accept="image/*" multiple style="display:none" onchange="handleMultipleFiles(this)">
         </div>
 
         <div class="form-group">
@@ -129,7 +141,7 @@
     const DEPO_URL = "https://script.google.com/macros/s/AKfycbz6yl6eh7_E5nc00tTWTJdE9M2sOr-781p7tXqXvCZ9J7TVcYUVADok-HMRo_azlY8xmg/exec"; 
     const GIZLI_ANAHTAR = "LegologlarFLL2024";
 
-    let photoArray = []; // Fotoğrafları tutan dinamik dizi
+    let photoArray = []; // Birden fazla fotoğrafı tutmak için dizi
     let cachedReports = {}; 
     
     var map = L.map('map').setView([39.0, 35.0], 6);
@@ -142,7 +154,7 @@
         marker = L.marker(selectedLoc).addTo(map);
     });
 
-    // Çoklu Dosya İşleme
+    // Çoklu Dosya İşleme Fonksiyonu
     function handleMultipleFiles(input) {
         const files = Array.from(input.files);
         
@@ -182,11 +194,17 @@
             div.className = 'preview-item';
             div.innerHTML = `
                 <img src="${src}">
-                <button class="remove-img" onclick="event.stopPropagation(); removePhoto(${index})">X</button>
+                <button class="remove-img" onclick="event.stopPropagation(); removePhoto(${index})">×</button>
             `;
             container.appendChild(div);
         });
-        document.getElementById('upload-status').innerText = photoArray.length > 0 ? `${photoArray.length} Fotoğraf Seçildi` : "Tıkla ve Fotoğrafları Seç (Max 3)";
+        
+        const statusText = document.getElementById('upload-status-text');
+        if(photoArray.length > 0) {
+            statusText.innerText = `${photoArray.length} Fotoğraf Eklendi (Kalan: ${3 - photoArray.length})`;
+        } else {
+            statusText.innerText = "Tıkla ve Fotoğraf Seç / Çek (Max 3)";
+        }
     }
 
     function removePhoto(index) {
@@ -196,12 +214,22 @@
 
     function hesaplaAkilliGuven(metin) {
         if (!metin || metin.length < 15) return 0;
-        let skor = 40; // Temel puan
-        const temizMetin = metin.toLowerCase();
-        const anahtar = ["kazı", "kepçe", "gece", "buldum", "tarihi", "define"];
-        anahtar.forEach(k => { if (temizMetin.includes(k)) skor += 5; });
-        skor += (photoArray.length * 10);
-        return Math.min(skor, 100);
+        let skor = 0;
+        const temizMetin = metin.toLowerCase().trim();
+        if (/[^aeıioöuü\s]{5,}/g.test(temizMetin)) return 10;
+        const kelimeler = temizMetin.split(/\s+/);
+        skor += kelimeler.length >= 4 ? 30 : 10;
+        const sesliHarfler = temizMetin.match(/[aeıioöuü]/g);
+        const sesliOrani = sesliHarfler ? sesliHarfler.length / temizMetin.length : 0;
+        skor += (sesliOrani > 0.25 && sesliOrani < 0.50) ? 30 : -20;
+        if (/(.)\1\1/.test(temizMetin)) skor -= 30;
+        const anahtar = ["kazı", "kepçe", "gece", "buldum", "tarihi", "lahit", "define", "şüpheli"];
+        anahtar.forEach(k => { if (temizMetin.includes(k)) skor += 10; });
+        
+        // Fotoğraf sayısı bonusu
+        skor += (photoArray.length * 10); 
+        
+        return Math.max(0, Math.min(skor, 100));
     }
 
     function sifrele(metin) { return CryptoJS.AES.encrypt(metin, GIZLI_ANAHTAR).toString(); }
@@ -209,29 +237,38 @@
         try { const bytes = CryptoJS.AES.decrypt(sifreliMetin, GIZLI_ANAHTAR); return bytes.toString(CryptoJS.enc.Utf8); } catch (e) { return null; }
     }
 
+    async function syncCount() {
+        try { const r = await fetch(BACKEND_URL); const d = await r.json(); document.getElementById('countVal').innerText = d.total; } catch (e) {}
+    }
+    syncCount();
+
     async function submitReport() {
         const desc = document.getElementById('rDesc').value;
-        if(!selectedLoc || desc.length < 5) { alert("Konum ve açıklama zorunludur!"); return; }
+        const name = document.getElementById('rName').value || "Anonim";
+        const oDate = document.getElementById('eventDate').value;
+        const oTime = document.getElementById('eventTime').value;
+        if(!selectedLoc || desc.length < 5) { alert("Lütfen haritadan konum seçin ve açıklama yazın!"); return; }
         
+        // Birden fazla fotoğrafı gönderiyoruz
         const rawData = { 
-            ad: document.getElementById('rName').value || "Anonim", 
-            detay: desc, koordinat: selectedLoc, 
-            tarih: new Date().toLocaleString(),
-            olayZamani: `${document.getElementById('eventDate').value} ${document.getElementById('eventTime').value}`, 
+            ad: name, 
+            detay: desc, 
+            koordinat: selectedLoc, 
+            tarih: new Date().toLocaleString(), 
+            olayZamani: `${oDate} ${oTime}`, 
             fotolar: photoArray, 
             guven: hesaplaAkilliGuven(desc) 
         };
-
+        
         const securePackage = sifrele(JSON.stringify(rawData));
         try {
             fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ secureData: securePackage }) });
             fetch(BACKEND_URL, { method: 'POST', mode: 'no-cors' });
             alert("İhbar başarıyla iletildi.");
             location.reload();
-        } catch (e) { alert("Hata!"); }
+        } catch (e) { alert("Hata oluştu."); }
     }
 
-    // Admin fonksiyonları aynı şekilde devam eder...
     async function checkAdmin() {
         const params = new URLSearchParams(window.location.search);
         if (params.get('admin') === 'true') {
@@ -241,47 +278,94 @@
     }
 
     async function renderAdminView() {
-        document.getElementById('info-section').style.display = 'none';
-        document.getElementById('quiz-bridge').style.display = 'none';
+        const infoSec = document.getElementById('info-section');
+        if(infoSec) infoSec.style.display = 'none';
+        
+        const quizBridge = document.getElementById('quiz-bridge');
+        if(quizBridge) quizBridge.style.display = 'none';
+
         document.getElementById('main-content').innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <h2>🕵️ Yönetici Kontrol Paneli</h2>
                 <button class="btn-main" onclick="location.reload()" style="width:120px; margin-top:0; background:var(--secondary)">Çıkış</button>
             </div>
-            <div id="admin-list">Veriler yükleniyor...</div>`;
+            <div id="admin-list" style="overflow-x:auto;">Veriler analiz ediliyor...</div>`;
         
         try {
             const res = await fetch(DEPO_URL);
             const data = await res.json();
-            let html = "<table style='width:100%; border-collapse:collapse; background:white;'>";
+            let html = "<table style='width:100%; border-collapse:collapse; background:white; font-size:13px;'>";
             html += "<tr style='background:#eee; text-align:left;'><th>Güven</th><th>İhbarcı</th><th>Zaman</th><th>İşlem</th></tr>";
-            
+            let count = 0;
             data.forEach((row, index) => {
                 let fullEncryptedData = "";
-                for(let i = 1; i < row.length; i++) { if (row[i]) { let chunk = String(row[i]).trim(); if (chunk.startsWith("'")) chunk = chunk.substring(1); fullEncryptedData += chunk; } }
-                const decStr = sifreCoz(fullEncryptedData);
-                if(decStr) {
-                    const item = JSON.parse(decStr);
-                    cachedReports[index] = item; 
-                    html += `<tr>
-                        <td style='padding:12px;'>%${item.guven}</td>
-                        <td style='padding:12px;'>${item.ad}</td>
-                        <td style='padding:12px;'>${item.olayZamani}</td>
-                        <td style='padding:12px;'><button onclick="openDetail(${index})">İNCELE</button></td>
-                    </tr>`;
+                for(let i = 1; i < row.length; i++) {
+                    if (row[i]) {
+                        let chunk = String(row[i]).trim();
+                        if (chunk.startsWith("'")) chunk = chunk.substring(1);
+                        fullEncryptedData += chunk;
+                    }
+                }
+                if (fullEncryptedData.length > 50) { 
+                    const decStr = sifreCoz(fullEncryptedData);
+                    if(decStr) {
+                        try {
+                            const item = JSON.parse(decStr);
+                            cachedReports[index] = item; 
+                            let color = item.guven > 60 ? "#e74c3c" : "#27ae60";
+                            html += `<tr style='border-bottom:1px solid #ddd;'>
+                                <td style='padding:12px;'><span style='background:${color}; color:white; padding:4px 8px; border-radius:5px;'>%${item.guven}</span></td>
+                                <td style='padding:12px;'>${item.ad}</td>
+                                <td style='padding:12px;'>${item.olayZamani}</td>
+                                <td style='padding:12px;'><button onclick="openDetail(${index})" style="background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer;">İNCELE</button></td>
+                            </tr>`;
+                            count++;
+                        } catch (e) {}
+                    }
                 }
             });
-            document.getElementById('admin-list').innerHTML = html + "</table>";
-        } catch (e) { document.getElementById('admin-list').innerHTML = "Hata oluştu."; }
+            document.getElementById('admin-list').innerHTML = count > 0 ? html + "</table>" : "Görüntülenecek ihbar verisi bulunamadı.";
+        } catch (e) { document.getElementById('admin-list').innerHTML = "Hata: Verilere ulaşılamadı."; }
     }
 
     function openDetail(index) {
         const item = cachedReports[index];
-        document.getElementById('mBody').innerHTML = `<b>👤 İhbarcı:</b> ${item.ad}<br><b>🛡️ Güven:</b> %${item.guven}<br><b>📝 Detay:</b> ${item.detay}`;
+        if(!item) return;
+        document.getElementById('mBody').innerHTML = `
+            <b>📍 Konum:</b> ${item.koordinat.lat.toFixed(5)}, ${item.koordinat.lng.toFixed(5)}<br>
+            <b>👤 İhbarcı:</b> ${item.ad}<br>
+            <b>📅 Olay Zamanı:</b> ${item.olayZamani}<br>
+            <b>🛡️ Güven Skoru:</b> %${item.guven}<br>
+            <b>📝 Detay:</b> <p style="background:#f9f9f9; padding:10px; border-radius:8px; border-left:4px solid var(--accent);">${item.detay}</p>
+        `;
+        
+        // Detayda çoklu fotoğrafları gösterme
         let imgHtml = "";
-        (item.fotolar || []).forEach(f => imgHtml += `<img src="${f}" style="width:100%; border-radius:5px;">`);
+        const fotolar = item.fotolar || (item.foto ? [item.foto] : []);
+        fotolar.forEach(src => {
+            imgHtml += `<img src="${src}" style="width:100%; border-radius:10px; margin-bottom:10px;">`;
+        });
         document.getElementById('mImages').innerHTML = imgHtml || "Fotoğraf yok.";
+        
+        document.getElementById('modalFooter').innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                <button onclick="downloadJSON(${index})" style="background:#2a9d8f; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer; font-weight:bold;">JSON İNDİR</button>
+                <button onclick="deleteReport(${index})" style="background:#e63946; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer; font-weight:bold;">İHBARI SİL</button>
+            </div>`;
         document.getElementById('detailModal').style.display = "block";
+    }
+
+    function downloadJSON(index) {
+        const data = cachedReports[index];
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a'); link.href = url; link.download = `ihbar_${index + 1}.json`; link.click();
+    }
+
+    async function deleteReport(index) {
+        if(confirm("Bu ihbarı silmek istediğinize emin misiniz?")) {
+            try { await fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: index }) }); alert("Silme talebi iletildi."); location.reload(); } catch (e) { alert("Hata!"); }
+        }
     }
 
     function closeDetail() { document.getElementById('detailModal').style.display = "none"; }
