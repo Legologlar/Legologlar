@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kaçak Kazı Bildirim Portalı | FLL LEGOLOGLAR</title>
+    <title>T.C. Arkeolojik Miras Denetim Portalı</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -12,125 +12,165 @@
 
     <style>
         :root {
-            --primary: #00b4d8; --secondary: #03045e; --earth: #935805;
-            --bg: #f1f3f8; --white: #ffffff; --accent: #0096c7; --light-blue: #caf0f8;
+            --gov-blue: #0b1a30;
+            --gov-accent: #1a3a5f;
+            --gold: #c5a059;
+            --light-bg: #f4f7f9;
+            --white: #ffffff;
+            --danger: #d90429;
+            --success: #2b9348;
         }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--secondary); }
-        .page { min-height: 100vh; width: 100%; }
-        header { background: linear-gradient(135deg, var(--secondary), var(--primary)); color: white; padding: 30px 20px; text-align: center; }
-        .section { background: var(--white); border-radius: 20px; padding: 30px; margin: 20px auto; max-width: 850px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         
-        .stat-card { background: var(--light-blue); padding: 15px; border-radius: 12px; text-align: center; font-weight: bold; margin-bottom: 20px; }
-        #map { height: 350px; border-radius: 15px; border: 2px solid var(--light-blue); margin: 10px 0 20px 0; z-index: 1; width: 100%; }
+        body { margin: 0; font-family: 'Inter', 'Segoe UI', sans-serif; background: var(--light-bg); color: var(--gov-blue); }
         
-        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
-        label { font-weight: bold; margin-bottom: 8px; display: block; }
-        input, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--light-blue); box-sizing: border-box; font-family: inherit; font-size: 14px; }
+        header { 
+            background: var(--gov-blue); 
+            color: white; 
+            padding: 40px 20px; 
+            text-align: center; 
+            border-bottom: 4px solid var(--gold);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .container { max-width: 900px; margin: -30px auto 50px; padding: 0 15px; }
+
+        .card { 
+            background: var(--white); 
+            border-radius: 12px; 
+            padding: 35px; 
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08); 
+            border-top: 5px solid var(--gov-accent);
+        }
+
+        .official-badge {
+            display: inline-block;
+            background: var(--light-bg);
+            border: 1px solid #ddd;
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--gov-accent);
+        }
+
+        h2 { border-bottom: 2px solid var(--light-bg); padding-bottom: 10px; margin-top: 0; font-size: 22px; }
+
+        .stat-card { 
+            background: var(--gov-blue); 
+            color: var(--gold); 
+            padding: 15px; 
+            border-radius: 8px; 
+            text-align: center; 
+            font-size: 18px; 
+            font-weight: bold; 
+            margin-bottom: 25px; 
+        }
+
+        #map { height: 380px; border-radius: 10px; border: 1px solid #ccd; margin: 10px 0; z-index: 1; }
         
-        .upload-area { border: 2px dashed var(--accent); border-radius: 15px; padding: 20px; text-align: center; background: #fafafa; cursor: pointer; transition: 0.3s; margin-bottom: 15px; }
-        .upload-area:hover { background: var(--light-blue); }
+        .form-group { margin-bottom: 20px; }
+        label { font-weight: 600; font-size: 14px; margin-bottom: 8px; display: block; color: var(--gov-accent); }
         
-        .preview-container { display: flex; gap: 10px; margin-top: 15px; justify-content: center; flex-wrap: wrap; }
-        .preview-item { position: relative; width: 80px; height: 80px; border-radius: 10px; border: 2px solid var(--accent); overflow: hidden; }
+        input, textarea, select { 
+            width: 100%; padding: 14px; border-radius: 8px; border: 1px solid #ced4da; 
+            box-sizing: border-box; font-size: 15px; transition: 0.2s;
+        }
+        input:focus, textarea:focus { border-color: var(--gold); outline: none; box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.2); }
+
+        /* Upload Area Tasarımı */
+        .upload-area { 
+            border: 2px dashed #b1bdce; border-radius: 10px; padding: 30px; 
+            text-align: center; background: #f8f9fa; cursor: pointer; transition: 0.3s;
+        }
+        .upload-area:hover { background: #edf2f7; border-color: var(--gov-accent); }
+        
+        .preview-container { display: flex; gap: 15px; margin-top: 20px; justify-content: center; }
+        .preview-item { 
+            position: relative; width: 100px; height: 100px; 
+            border-radius: 8px; border: 2px solid var(--gold); overflow: hidden; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
         .preview-item img { width: 100%; height: 100%; object-fit: cover; }
-        .remove-img { position: absolute; top: 2px; right: 2px; background: rgba(230, 57, 70, 0.9); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-        .btn-main { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        .btn-main:hover { background: var(--secondary); }
-        
-        .quiz-bridge { margin-top: 30px; text-align: center; border-top: 2px dashed #ccc; padding-top: 20px; }
-        .btn-quiz-go { background: var(--earth); color: white; border: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
-
-        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto; }
-        .modal-content { background: white; margin: 3% auto; padding: 25px; border-radius: 15px; width: 90%; max-width: 700px; position: relative; color: #333; }
-        .close-modal { position: absolute; right: 20px; top: 10px; font-size: 30px; cursor: pointer; }
-
-        /* Admin Detay Ekstraları */
-        #adminMap { height: 200px; width: 100%; border-radius: 10px; margin-top: 10px; border: 1px solid #ddd; }
-        .zoom-btn { background: var(--secondary); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; margin-left: 10px; }
-
-        @media (max-width: 600px) {
-            .section div[style*="display: grid"] { display: flex !important; flex-direction: column !important; gap: 15px !important; }
+        .remove-img { 
+            position: absolute; top: 0; right: 0; background: var(--danger); 
+            color: white; border: none; width: 22px; height: 22px; cursor: pointer; font-size: 14px;
         }
+
+        .btn-main { 
+            background: var(--gov-blue); color: var(--gold); border: 1px solid var(--gold);
+            padding: 18px; border-radius: 8px; width: 100%; font-size: 16px; 
+            font-weight: bold; cursor: pointer; transition: 0.3s; letter-spacing: 1px;
+        }
+        .btn-main:hover { background: var(--gov-accent); transform: translateY(-2px); }
+
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); }
+        .modal-content { background: white; margin: 2% auto; padding: 40px; border-radius: 12px; width: 90%; max-width: 800px; position: relative; }
+        .close-modal { position: absolute; right: 25px; top: 20px; font-size: 30px; cursor: pointer; }
+
+        #adminMap { height: 250px; border-radius: 10px; margin: 15px 0; border: 1px solid #ddd; }
+        .zoom-btn { background: var(--gov-blue); color: var(--gold); border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; vertical-align: middle; }
+
+        @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr !important; } }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     </style>
 </head>
 <body>
 
-<div id="report-page" class="page">
-    <header>
-        <h1>🏛️ Arkeolojik Miras Koruma Portalı</h1>
-        <p>İhbar Sistemi & Fotoğraflı Kanıt Analizi</p>
-    </header>
+<header>
+    <div style="font-size: 40px; margin-bottom: 10px;">⚖️</div>
+    <h1 style="margin:0; letter-spacing: 1px;">T.C. ARKEOLOJİK MİRAS DENETİM PORTALI</h1>
+    <p style="opacity: 0.8; font-weight: 300;">Vatandaş Bildirim ve Kanıt Takip Sistemi</p>
+</header>
 
-    <div class="section" id="info-section">
-        <h2 style="text-align: center; color: var(--secondary); margin-bottom: 20px;">
-            <i class="fas fa-landmark"></i> Ortak Mirasımızı Koruma Sorumluluğu
-        </h2>
-        <p style="line-height: 1.7; text-align: justify;">
-            Türkiye, dünyanın en zengin arkeolojik miraslarından birine ev sahipliği yapmaktadır. Ancak bu miras, <strong>definecilik ve tarihi eser kaçakçılığı</strong> nedeniyle büyük bir tehdit altındadır.
-        </p>
-        <div style="background: #f0f8ff; padding: 15px 20px; border-radius: 10px; border-left: 4px solid var(--accent); margin-top: 25px; text-align: center;">
-            <h4 style="margin-top: 0; color: var(--secondary);"><i class="fas fa-bullhorn"></i> Sizin de Sorumluluğunuz Var!</h4>
-            <p style="margin-bottom:0;">İhbarlarınızı 3 fotoğraflı kanıtla iletebilirsiniz.</p>
-        </div>
-    </div>
-
-    <div id="main-content" class="section">
-        <div class="stat-card">Kayıtlı İhbar Sayısı: <span id="countVal">0</span></div>
+<div class="container">
+    <div class="card">
+        <div class="official-badge"><i class="fas fa-shield-alt"></i> RESMİ BİLDİRİM FORMU</div>
+        <div class="stat-card">SİSTEMDEKİ TOPLAM KAYIT: <span id="countVal">0</span></div>
 
         <div class="form-group">
-            <label>İhbarcı Bilgisi</label>
-            <input type="text" id="rName" placeholder="Ad Soyad (Anonim için boş bırakın)">
+            <label>Bildirim Sahibi Bilgileri</label>
+            <input type="text" id="rName" placeholder="Ad Soyad (Gizli kalmak için boş bırakınız)">
         </div>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-            <div class="form-group" style="margin-bottom:0;"><label>Olay Tarihi</label><input type="date" id="eventDate"></div>
-            <div class="form-group" style="margin-bottom:0;"><label>Olay Saati</label><input type="time" id="eventTime"></div>
+        <div class="grid-2">
+            <div class="form-group"><label>Olay Tarihi</label><input type="date" id="eventDate"></div>
+            <div class="form-group"><label>Tespit Saati</label><input type="time" id="eventTime"></div>
         </div>
 
         <div class="form-group">
-            <label>Olay Detayı</label>
-            <textarea id="rDesc" rows="5" placeholder="Şüpheli faaliyeti detaylıca açıklayın..."></textarea>
+            <label>Olayın Detaylı Açıklaması</label>
+            <textarea id="rDesc" rows="4" placeholder="Şüpheli faaliyetin detaylarını, araç plakalarını veya kişi tanımlarını yazınız..."></textarea>
         </div>
 
         <div class="form-group">
-            <label>Kanıt Fotoğrafları (En fazla 3 adet)</label>
+            <label>Görsel Kanıt Dosyaları (Maksimum 3 Adet)</label>
             <div class="upload-area" onclick="document.getElementById('fileInput').click()">
                 <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="handleMultipleFiles(this)">
-                <div id="upload-instruction">
-                    <i class="fas fa-camera" style="font-size: 24px; color: var(--accent);"></i>
-                    <p id="upload-status-text">Tıkla ve Fotoğraf Seç / Çek (Max 3)</p>
-                </div>
+                <i class="fas fa-file-upload" style="font-size: 35px; color: var(--gov-accent); margin-bottom: 10px;"></i>
+                <p id="upload-status-text" style="font-weight: 600; margin: 5px 0;">Dosyaları Seçmek İçin Buraya Tıklayın</p>
                 <div class="preview-container" id="previewContainer"></div>
             </div>
         </div>
 
         <div class="form-group">
-            <label>Olay Konumu (Haritadan İşaretleyin)</label>
+            <label>Konum Tespiti (Harita Üzerinden İşaretleyiniz)</label>
             <div id="map"></div>
         </div>
         
-        <button class="btn-main" onclick="submitReport()">İHBARI GÖNDER</button>
-
-        <div class="quiz-bridge" id="quiz-bridge">
-            <h3>Arkeoloji Uzmanlık Testi</h3>
-            <a href="quiz.html" class="btn-quiz-go">
-                <i class="fas fa-graduation-cap"></i> Quize Başla
-            </a>
-        </div>
+        <button class="btn-main" onclick="submitReport()">BİLDİRİMİ RESMİ MAKAMLARA İLET</button>
     </div>
 </div>
 
 <div id="detailModal" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="closeDetail()">&times;</span>
-        <h2>🕵️ İhbar Detay Raporu</h2>
-        <hr>
-        <div id="mBody" style="line-height: 1.8; margin-top: 15px;"></div>
+        <h2 style="color: var(--gov-blue);"><i class="fas fa-folder-open"></i> VAKA İNCELEME DOSYASI</h2>
+        <div id="mBody" style="background: #fdfdfd; padding: 20px; border: 1px solid #eee; border-radius: 8px;"></div>
         <div id="adminMap"></div>
-        <div id="mImages" style="margin-top:20px; display: grid; grid-template-columns: repeat(3, 1fr); gap:10px;"></div>
-        <hr>
-        <div id="modalFooter"></div>
+        <div id="mImages" style="display: grid; grid-template-columns: repeat(3, 1fr); gap:15px; margin-top: 20px;"></div>
+        <div id="modalFooter" style="margin-top: 25px;"></div>
     </div>
 </div>
 
@@ -141,7 +181,7 @@
 
     let photoArray = [];
     let cachedReports = {}; 
-    let adminMap = null, adminMarker = null; // Admin haritası için değişkenler
+    let adminMap = null, adminMarker = null;
     
     var map = L.map('map').setView([39.0, 35.0], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
@@ -155,21 +195,20 @@
 
     function handleMultipleFiles(input) {
         const files = Array.from(input.files);
-        if (photoArray.length + files.length > 3) { alert("En fazla 3 fotoğraf!"); return; }
+        if (photoArray.length + files.length > 3) { alert("Sistem en fazla 3 kanıt fotoğrafına izin vermektedir."); return; }
         files.forEach(file => {
             const reader = new FileReader();
             reader.onload = function (e) {
                 const img = new Image();
                 img.onload = function () {
                     const canvas = document.createElement('canvas');
-                    const maxWidth = 800;
+                    const maxWidth = 1000;
                     let width = img.width, height = img.height;
                     if (width > maxWidth) { height = (maxWidth / width) * height; width = maxWidth; }
                     canvas.width = width; canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    const base64 = canvas.toDataURL('image/jpeg', 0.6);
-                    photoArray.push(base64);
+                    photoArray.push(canvas.toDataURL('image/jpeg', 0.8));
                     renderPreviews();
                 };
                 img.src = e.target.result;
@@ -184,82 +223,53 @@
         photoArray.forEach((src, index) => {
             const div = document.createElement('div');
             div.className = 'preview-item';
-            div.innerHTML = `<img src="${src}"><button class="remove-img" onclick="event.stopPropagation(); removePhoto(${index})">×</button>`;
+            div.innerHTML = `<img src="${src}"><button class="remove-img" onclick="event.stopPropagation(); removePhoto(${index})">&times;</button>`;
             container.appendChild(div);
         });
-        document.getElementById('upload-status-text').innerText = photoArray.length > 0 ? `${photoArray.length} Fotoğraf Eklendi` : "Tıkla ve Fotoğraf Seç / Çek (Max 3)";
+        document.getElementById('upload-status-text').innerText = photoArray.length > 0 ? `${photoArray.length} Dosya Eklendi` : "Dosyaları Seçmek İçin Buraya Tıklayın";
     }
 
     function removePhoto(index) { photoArray.splice(index, 1); renderPreviews(); }
 
-    function hesaplaAkilliGuven(metin) {
-        if (!metin || metin.length < 15) return 0;
-        let skor = 30 + (photoArray.length * 15);
-        return Math.min(skor, 100);
-    }
-
-    function sifrele(metin) { return CryptoJS.AES.encrypt(metin, GIZLI_ANAHTAR).toString(); }
-    function sifreCoz(sifreliMetin) {
-        try { const bytes = CryptoJS.AES.decrypt(sifreliMetin, GIZLI_ANAHTAR); return bytes.toString(CryptoJS.enc.Utf8); } catch (e) { return null; }
-    }
-
-    async function syncCount() {
-        try { const r = await fetch(BACKEND_URL); const d = await r.json(); document.getElementById('countVal').innerText = d.total; } catch (e) {}
-    }
-    syncCount();
-
-    async function submitReport() {
-        const desc = document.getElementById('rDesc').value;
-        if(!selectedLoc || desc.length < 5) { alert("Konum ve açıklama şart!"); return; }
-        const rawData = { ad: document.getElementById('rName').value || "Anonim", detay: desc, koordinat: selectedLoc, tarih: new Date().toLocaleString(), olayZamani: `${document.getElementById('eventDate').value} ${document.getElementById('eventTime').value}`, fotolar: photoArray, guven: hesaplaAkilliGuven(desc) };
-        const securePackage = sifrele(JSON.stringify(rawData));
-        try {
-            fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ secureData: securePackage }) });
-            fetch(BACKEND_URL, { method: 'POST', mode: 'no-cors' });
-            alert("İhbar iletildi."); location.reload();
-        } catch (e) { alert("Hata!"); }
-    }
-
-    // Adres Bulma Fonksiyonu (Nominatim API)
     async function getAddress(lat, lng) {
         try {
             const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
             const data = await response.json();
-            return data.display_name || "Adres bulunamadı.";
-        } catch (e) { return "Adres servis hatası."; }
+            return data.display_name || "Konum bilgisi alınamadı.";
+        } catch (e) { return "Adres servisi kullanılamıyor."; }
     }
 
-    async function checkAdmin() {
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('admin') === 'true') {
-            const pass = prompt("Yönetici Şifresi:");
-            if (pass === "1234") renderAdminView();
-        }
+    async function submitReport() {
+        const desc = document.getElementById('rDesc').value;
+        if(!selectedLoc || desc.length < 10) { alert("Lütfen haritadan konum işaretleyiniz ve geçerli bir açıklama giriniz."); return; }
+        const rawData = { ad: document.getElementById('rName').value || "Anonim Bildirim", detay: desc, koordinat: selectedLoc, tarih: new Date().toLocaleString(), olayZamani: `${document.getElementById('eventDate').value} ${document.getElementById('eventTime').value}`, fotolar: photoArray, guven: Math.min(40 + (photoArray.length * 20), 100) };
+        const securePackage = CryptoJS.AES.encrypt(JSON.stringify(rawData), GIZLI_ANAHTAR).toString();
+        try {
+            fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ secureData: securePackage }) });
+            fetch(BACKEND_URL, { method: 'POST', mode: 'no-cors' });
+            alert("Bildiriminiz resmi kayıtlarımıza alınmıştır. Teşekkür ederiz."); location.reload();
+        } catch (e) { alert("Sistem hatası!"); }
     }
 
     async function renderAdminView() {
-        document.getElementById('info-section').style.display = 'none';
-        document.getElementById('quiz-bridge').style.display = 'none';
         document.getElementById('main-content').innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2>🕵️ Yönetici Kontrol Paneli</h2>
-                <button class="btn-main" onclick="location.reload()" style="width:120px; margin-top:0; background:var(--secondary)">Çıkış</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; border-bottom: 2px solid var(--gov-blue); padding-bottom:15px;">
+                <h2 style="margin:0;"><i class="fas fa-lock"></i> YÖNETİCİ DENETİM PANELİ</h2>
+                <button onclick="location.reload()" style="padding:10px 20px; border-radius:5px; background:var(--danger); color:white; border:none; cursor:pointer;">PANELİ KAPAT</button>
             </div>
-            <div id="admin-list">Yükleniyor...</div>`;
+            <div id="admin-list">Veritabanı sorgulanıyor...</div>`;
         try {
             const res = await fetch(DEPO_URL);
             const data = await res.json();
-            let html = "<table style='width:100%; border-collapse:collapse; background:white;'>";
-            html += "<tr style='background:#eee; text-align:left;'><th>Güven</th><th>İhbarcı</th><th>Zaman</th><th>İşlem</th></tr>";
+            let html = "<table style='width:100%; border-collapse:collapse;'>";
+            html += "<tr style='background:var(--gov-accent); color:var(--gold);'><th style='padding:15px;'>GÜVEN</th><th>İHBARCI</th><th>TARİH</th><th>EYLEM</th></tr>";
             data.forEach((row, index) => {
-                let fullEncryptedData = "";
-                for(let i = 1; i < row.length; i++) { if (row[i]) fullEncryptedData += String(row[i]).replace(/^'/, ''); }
-                const decStr = sifreCoz(fullEncryptedData);
-                if(decStr) {
-                    const item = JSON.parse(decStr);
-                    cachedReports[index] = item;
-                    html += `<tr style='border-bottom:1px solid #ddd;'><td style='padding:12px;'>%${item.guven}</td><td style='padding:12px;'>${item.ad}</td><td style='padding:12px;'>${item.olayZamani}</td><td style='padding:12px;'><button onclick="openDetail(${index})">İNCELE</button></td></tr>`;
-                }
+                let enc = ""; for(let i = 1; i < row.length; i++) { if (row[i]) enc += String(row[i]).replace(/^'/, ''); }
+                try {
+                    const dec = JSON.parse(CryptoJS.AES.decrypt(enc, GIZLI_ANAHTAR).toString(CryptoJS.enc.Utf8));
+                    cachedReports[index] = dec;
+                    html += `<tr style='border-bottom:1px solid #eee;'><td style='padding:15px; font-weight:bold; color:var(--success)'>%${dec.guven}</td><td>${dec.ad}</td><td>${dec.olayZamani}</td><td><button class="zoom-btn" onclick="openDetail(${index})">DOSYAYI AÇ</button></td></tr>`;
+                } catch(e){}
             });
             document.getElementById('admin-list').innerHTML = html + "</table>";
         } catch (e) { }
@@ -267,66 +277,35 @@
 
     async function openDetail(index) {
         const item = cachedReports[index];
-        if(!item) return;
-
-        // Adresi alalım
-        const adressText = await getAddress(item.koordinat.lat, item.koordinat.lng);
-
+        const addr = await getAddress(item.koordinat.lat, item.koordinat.lng);
         document.getElementById('mBody').innerHTML = `
-            <b>📍 Koordinat:</b> ${item.koordinat.lat.toFixed(5)}, ${item.koordinat.lng.toFixed(5)} 
-            <button class="zoom-btn" onclick="zoomToMarker(${item.koordinat.lat}, ${item.koordinat.lng})"><i class="fas fa-search-plus"></i></button><br>
-            <b>🏠 Adres:</b> <span style="color:#555; font-size:12px;">${adressText}</span><br>
-            <b>👤 İhbarcı:</b> ${item.ad} | <b>🛡️ Güven:</b> %${item.guven}<br>
-            <b>📝 Detay:</b> <p style="background:#f9f9f9; padding:8px; border-left:4px solid var(--accent);">${item.detay}</p>
+            <p><strong>📍 Koordinatlar:</strong> ${item.koordinat.lat.toFixed(6)}, ${item.koordinat.lng.toFixed(6)} <button class="zoom-btn" onclick="zoomIn()"><i class="fas fa-search-plus"></i></button></p>
+            <p><strong>🏠 Adres Tespiti:</strong> ${addr}</p>
+            <p><strong>👤 Bildiren:</strong> ${item.ad}</p>
+            <p><strong>📝 Vaka Detayı:</strong> ${item.detay}</p>
         `;
-        
-        // Fotoğraflar
-        let imgHtml = "";
-        (item.fotolar || []).forEach(src => imgHtml += `<img src="${src}" style="width:100%; border-radius:10px;">`);
-        document.getElementById('mImages').innerHTML = imgHtml;
-
-        document.getElementById('modalFooter').innerHTML = `
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
-                <button onclick="downloadJSON(${index})" style="background:#2a9d8f; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer;">JSON İNDİR</button>
-                <button onclick="deleteReport(${index})" style="background:#e63946; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer;">SİL</button>
-            </div>`;
-
+        let imgs = ""; (item.fotolar || []).forEach(s => imgs += `<img src="${s}" style="width:100%; border:1px solid #ddd; border-radius:5px;">`);
+        document.getElementById('mImages').innerHTML = imgs;
+        document.getElementById('modalFooter').innerHTML = `<button onclick="downloadJSON(${index})" style="padding:15px; width:100%; background:var(--gov-blue); color:var(--gold); border:none; border-radius:8px; cursor:pointer; font-weight:bold;">DOSYAYI JSON OLARAK ARŞİVLE</button>`;
         document.getElementById('detailModal').style.display = "block";
-
-        // Admin haritasını başlat/güncelle
         setTimeout(() => {
             if(!adminMap) {
-                adminMap = L.map('adminMap').setView([item.koordinat.lat, item.koordinat.lng], 13);
+                adminMap = L.map('adminMap').setView([item.koordinat.lat, item.koordinat.lng], 14);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(adminMap);
-            } else {
-                adminMap.setView([item.koordinat.lat, item.koordinat.lng], 13);
-                adminMap.invalidateSize();
-            }
+            } else { adminMap.setView([item.koordinat.lat, item.koordinat.lng], 14); adminMap.invalidateSize(); }
             if(adminMarker) adminMap.removeLayer(adminMarker);
             adminMarker = L.marker([item.koordinat.lat, item.koordinat.lng]).addTo(adminMap);
         }, 300);
     }
 
-    function zoomToMarker(lat, lng) {
-        if(adminMap) adminMap.setView([lat, lng], 18);
-    }
-
-    function downloadJSON(index) {
-        const data = cachedReports[index];
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a'); link.href = url; link.download = `ihbar.json`; link.click();
-    }
-
-    async function deleteReport(index) {
-        if(confirm("Silinsin mi?")) {
-            await fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: index }) });
-            location.reload();
-        }
-    }
-
+    function zoomIn() { if(adminMap) adminMap.setZoom(18); }
     function closeDetail() { document.getElementById('detailModal').style.display = "none"; }
-    window.onload = checkAdmin;
+    
+    window.onload = () => {
+        const p = new URLSearchParams(window.location.search);
+        if (p.get('admin') === 'true' && prompt("Erişim Kodu:") === "1234") renderAdminView();
+        fetch(BACKEND_URL).then(r=>r.json()).then(d=>document.getElementById('countVal').innerText = d.total);
+    };
 </script>
 </body>
 </html>
