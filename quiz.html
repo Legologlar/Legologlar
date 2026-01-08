@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arkeoloji Uzmanlık Testi | FLL LEGOLOGLAR</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <style>
+        :root {
+            --primary: #00b4d8;
+            --secondary: #03045e;
+            --earth: #935805;
+            --bg: #f1f3f8;
+            --white: #ffffff;
+            --accent: #0096c7;
+            --light-blue: #caf0f8;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .quiz-container {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 30px;
+            width: 95%;
+            max-width: 750px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-top: 10px solid var(--earth);
+        }
+
+        header { text-align: center; margin-bottom: 20px; }
+
+        .nav-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            background: white;
+        }
+
+        .nav-dot.active {
+            border: 2px solid var(--secondary);
+            background: var(--light-blue);
+        }
+
+        .nav-dot.answered {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .options { list-style: none; padding: 0; }
+
+        .options li {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 2px solid #eee;
+            font-weight: 500;
+        }
+
+        .options li.selected {
+            border-color: var(--earth);
+            background: #fff3e0;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn-nav {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            flex: 1;
+        }
+
+        .btn-finish {
+            background: var(--earth);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            flex: 1.5;
+        }
+
+        .analysis-container {
+            text-align: left;
+            margin-top: 20px;
+            max-height: 350px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 15px;
+            background: #fafafa;
+        }
+
+        .analysis-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .ans-wrong { color: #d62828; font-weight: 600; }
+        .ans-correct { color: #2a9d8f; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div id="quiz-screen">
+        <header>
+            <h1>🏛️ Uzmanlık Testi</h1>
+            <div id="nav-dots" class="nav-panel"></div>
+        </header>
+
+        <div id="question-text" style="font-size:18px;font-weight:bold;margin-bottom:20px;"></div>
+        <ul id="options-list" class="options"></ul>
+
+        <div class="controls">
+            <button class="btn-nav" onclick="changeQuestion(-1)">⬅ Geri</button>
+            <button class="btn-nav" onclick="changeQuestion(1)">İleri ➡</button>
+            <button class="btn-finish" onclick="confirmFinish()">Sınavı Bitir</button>
+        </div>
+    </div>
+
+    <div id="result-screen" style="display:none;text-align:center;">
+        <h2>Test Sonucu</h2>
+        <div id="final-score" style="font-size:40px;font-weight:bold;color:var(--earth);"></div>
+        <div id="user-level" style="font-size:22px;font-weight:bold;margin-bottom:20px;"></div>
+        <div id="result-text"></div>
+    </div>
+</div>
+
+<script>
+let quizBank = [];
+let selectedQuestions = [];
+let currentIdx = 0;
+let userAnswers = {};
+
+function getLevel(answered, total) {
+    if (answered >= total) return "🏺 Arkeolog";
+    if (answered >= 80) return "🏆 Usta";
+    if (answered >= 60) return "🔍 Normal";
+    if (answered >= 40) return "🧭 Çaylak";
+    if (answered >= 20) return "🪨 Acemi";
+    return "📘 Başlangıç";
+}
+
+async function initQuiz() {
+    const res = await fetch("sorular.json");
+    quizBank = await res.json();
+    selectedQuestions = quizBank.sort(() => 0.5 - Math.random()).slice(0, 20);
+    renderNavDots();
+    showQuestion();
+}
+
+function renderNavDots() {
+    const nav = document.getElementById("nav-dots");
+    nav.innerHTML = "";
+    selectedQuestions.forEach((_, i) => {
+        const d = document.createElement("div");
+        d.className = "nav-dot";
+        d.innerText = i + 1;
+        d.onclick = () => jumpToQuestion(i);
+        d.id = "dot-" + i;
+        nav.appendChild(d);
+    });
+}
+
+function showQuestion() {
+    const q = selectedQuestions[currentIdx];
+    document.getElementById("question-text").innerText = q[0];
+
+    document.querySelectorAll(".nav-dot").forEach(d => d.classList.remove("active"));
+    document.getElementById("dot-" + currentIdx).classList.add("active");
+
+    const list = document.getElementById("options-list");
+    list.innerHTML = "";
+
+    for (let i = 1; i <= 3; i++) {
+        const li = document.createElement("li");
+        li.innerText = q[i];
+        if (userAnswers[currentIdx] === i - 1) li.classList.add("selected");
+        li.onclick = () => {
+            userAnswers[currentIdx] = i - 1;
+            document.getElementById("dot-" + currentIdx).classList.add("answered");
+            showQuestion();
+        };
+        list.appendChild(li);
+    }
+}
+
+function changeQuestion(step) {
+    currentIdx += step;
+    showQuestion();
+}
+
+function jumpToQuestion(i) {
+    currentIdx = i;
+    showQuestion();
+}
+
+function confirmFinish() {
+    showResult();
+}
+
+function showResult() {
+    document.getElementById("quiz-screen").style.display = "none";
+    document.getElementById("result-screen").style.display = "block";
+
+    let score = 0;
+    selectedQuestions.forEach((q, i) => {
+        if (userAnswers[i] === q[4]) score++;
+    });
+
+    const answeredCount = Object.keys(userAnswers).length;
+    const level = getLevel(answeredCount, quizBank.length);
+
+    document.getElementById("final-score").innerText = `${score} / ${selectedQuestions.length}`;
+    document.getElementById("user-level").innerText = `Seviyen: ${level}`;
+}
+
+initQuiz();
+</script>
+</body>
+</html>
