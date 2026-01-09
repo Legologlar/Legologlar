@@ -38,7 +38,7 @@
   ["Arkeometallurji bilim dalı neyi araştırır?", "Antik tıp yöntemlerini", "Antik metal üretim ve teknolojilerini", "Taş alet yapımını", 1, "easy"],
   ["Bir kazı alanında bulunan tohum, polen ve bitki kalıntılarını inceleyen uzmanlık alanı hangisidir?", "Zooarkeoloji", "Arkeobotanik", "Jeoarkeoloji", 1, "medium"],
   ["Roma dönemine ait 'Opus Sectile' terimi neyi ifade eder?", "Duvar örme tekniği", "Kesme mermer plakalarla yapılan zemin döşemesi", "Bronz döküm yöntemi", 1, "hard"],
-  ["Dünyanın yedi harikasından biri olan Artemis Tapınağı hangi antik kentimizdedir?", "Efesos", "Miletos", "Knidos", 0, "easy"]
+  ["Dünyanın yedi harikasından biri olan Artemis Tapınağı hangi antik kentimizdedir?", "Efesos", "Miletos", "Knidos", 0, "easy"],
   ["Stratigrafi ilkesine göre, bozulmamış bir arkeolojik dolguda en alt tabaka neyi ifade eder?", "En genç yerleşimi", "En eski yerleşimi", "Roma Dönemi katmanını", 1, "easy"],
   ["Dünyanın bilinen en eski kült yapısı (tapınak) kabul edilen Göbeklitepe hangi ilimizdedir?", "Şanlıurfa", "Gaziantep", "Mardin", 0, "easy"],
   ["Arkeolojide 'In Situ' terimi ne anlama gelmektedir?", "Eserin laboratuvarda incelenmesi", "Eserin başka bir yere taşınması", "Eserin bulunduğu orijinal konumunda olması", 2, "easy"],
@@ -120,4 +120,5 @@
   ["Mermer üzerine yapılan kabartma sanatına ne ad verilir?", "Sgraffito", "Rölyef", "Litos", 1, "easy"],
   ["UNESCO tarafından 'Dünya Miras Listesi'ne alınan, Anadolu'nun en eski yerleşimlerinden biri olan ve 'Aslanlı Kapısı' ile ünlü Hitit merkezi hangisidir?", "Hattuşa", "Alacahöyük", "Kültepe", 0, "easy"]
 ]
+
 
