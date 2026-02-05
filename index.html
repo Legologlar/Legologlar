@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kültürel Mirasımızı Koruma Portalı | FLL LEGOLOGLAR</title>
-    <link rel="icon" type="image/x-icon" sizes="2048x2048" href="logo.png">
+    <link rel="icon" type="image/x-icon" id="ana-logo" href="logo.png" >
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -12,6 +12,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
     <style>
+
+        #ana-logo {
+            width: 300px; /* Buradaki sayıyı artırdıkça resim büyür */
+            height: auto;  /* Oran bozulmasın diye otomatik ayarlar */
+            padding: 5px; /* Etrafına biraz nefes payı bırakır */
+    }
         :root {
             --primary: #00b4d8; --secondary: #03045e; --earth: #935805;
             --bg: #f1f3f8; --white: #ffffff; --accent: #0096c7; --light-blue: #caf0f8;
