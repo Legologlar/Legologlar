@@ -1,1 +1,22 @@
-
+[
+  ["Anadolu'da 'Tarih Öncesi' dönemlerin en önemli merkezlerinden biri olan, dünyanın bilinen en eski tapınak kompleksi hangisidir?", "Çatalhöyük", "Göbeklitepe", "Truva", 1, "easy"],
+  ["Hitit İmparatorluğu'nun başkenti olan ve Çorum sınırları içerisinde yer alan antik kent hangisidir?", "Hattuşa", "Sardes", "Efes", 0, "easy"],
+  ["Antik Çağ'da 'Dünyanın Yedi Harikası'ndan biri olan Artemis Tapınağı hangi ilimizdeki antik kenttedir?", "İzmir - Efes", "Antalya - Perge", "Muğla - Knidos", 0, "easy"],
+  ["Parayı ilk kez icat eden Lidyalıların başkenti neresidir?", "Gordion", "Sardes", "Milet", 1, "easy"],
+  ["Ünlü 'Midas'ın Kulakları' efsanesiyle tanınan Friglerin başkenti hangisidir?", "Gordion", "Hattuşa", "Kültepe", 0, "easy"],
+  ["Nemrut Dağı'ndaki dev heykeller hangi krallığa aittir?", "Urartu", "Kommagene", "Bergama", 1, "easy"],
+  ["Van Gölü çevresinde kurulan ve maden işçiliğiyle tanınan antik krallık hangisidir?", "Urartu", "Hitit", "Lidya", 0, "easy"],
+  ["Homeros'un İlyada destanına konu olan antik kent hangisidir?", "Truva", "Pergamon", "Knidos", 0, "easy"],
+  ["Anadolu'nun bilinen en eski yerleşik köy yerleşmelerinden biri olan 'Neolitik' kent hangisidir?", "Çatalhöyük", "Ani", "Patara", 0, "easy"],
+  ["Antik dünyanın en önemli kütüphanelerinden biri olan Celsus Kütüphanesi nerededir?", "Efes", "Hierapolis", "Milet", 0, "easy"],
+  ["Asur Ticaret Kolonileri çağında Anadolu'daki en önemli ticaret merkezi (karum) hangisidir?", "Kültepe", "Alacahöyük", "Zincirli", 0, "easy"],
+  ["Dünyanın en büyük mozaik müzelerinden biri olan Zeugma Mozaik Müzesi hangi ilimizdedir?", "Gaziantep", "Şanlıurfa", "Hatay", 0, "easy"],
+  ["Likya Birliği'nin başkenti ve dünyanın ilk demokratik meclis binasına ev sahipliği yapan yer neresidir?", "Patara", "Myra", "Xanthos", 0, "easy"],
+  ["Helenistik dönemde Pergamon Krallığı'nın merkezi olan ve dik bir akropol üzerine kurulu antik kent hangisidir?", "Bergama", "Sardes", "Aspendos", 0, "easy"],
+  ["Pamukkale travertenleri ile iç içe bulunan antik kent hangisidir?", "Hierapolis", "Laodikeia", "Aphrodisias", 0, "easy"],
+  ["Tiyatrosu günümüze en sağlam şekilde ulaşmış, Antalya yakınlarındaki antik yapı hangisidir?", "Aspendos", "Side", "Termessos", 0, "easy"],
+  ["Aydın sınırları içinde yer alan ve antik çağın en ünlü heykel okuluna sahip olan kenti hangisidir?", "Aphrodisias", "Didyma", "Priene", 0, "easy"],
+  ["Antik çağda gemilerin sığındığı önemli bir liman olan ve 'Knidos Afroditi' ile tanınan kent hangisidir?", "Knidos", "Kaunos", "Halikarnas", 0, "easy"],
+  ["Çatalhöyük kazılarında bulunan ve ana tanrıçayı simgeleyen heykelciklerin yapıldığı malzeme genellikle hangisidir?", "Pişmiş toprak", "Demir", "Cam", 0, "easy"],
+  ["Tarihte bilinen ilk yazılı antlaşma olan Kadeş Antlaşması'na taraf olan Anadolu uygarlığı hangisidir?", "Hititler", "Frigler", "Urartular", 0, "easy"]
+];
