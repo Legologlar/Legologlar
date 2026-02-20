@@ -3,109 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yönetici Paneli | LEGOLOGLAR</title>
+    <title>Yönetici Paneli | FLL LEGOLOGLAR</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
     <style>
-        :root { --primary: #00b4d8; --secondary: #03045e; --accent: #0096c7; --bg: #f1f3f8; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        .admin-card { background: white; border-radius: 15px; padding: 25px; max-width: 900px; margin: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
-        .guven-tag { padding: 4px 8px; border-radius: 5px; color: white; font-weight: bold; }
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); overflow-y: auto; }
-        .modal-content { background: white; margin: 5% auto; padding: 20px; width: 80%; border-radius: 10px; }
-        .btn-view { background: var(--accent); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
-        .btn-del { background: #e63946; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 10px; }
+        :root {
+            --primary: #00b4d8; --secondary: #03045e; --earth: #935805;
+            --bg: #f1f3f8; --white: #ffffff; --accent: #0096c7; --light-blue: #caf0f8;
+        }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--secondary); }
+        header { background: linear-gradient(135deg, var(--secondary), var(--primary)); color: white; padding: 30px 20px; text-align: center; }
+        .section { background: var(--white); border-radius: 20px; padding: 30px; margin: 20px auto; max-width: 850px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .btn-main { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto; }
+        .modal-content { background: white; margin: 3% auto; padding: 25px; border-radius: 15px; width: 90%; max-width: 700px; position: relative; color: #333; }
+        .close-modal { position: absolute; right: 20px; top: 10px; font-size: 30px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="admin-card" id="admin-area">
-    <h2>🕵️ Yönetici Kontrol Paneli</h2>
-    <div id="status">Erişim kontrol ediliyor...</div>
-    <div id="list-container"></div>
+<header>
+    <h1>🏛️ Kültürel Miras Portalı</h1>
+    <p>Yönetim Sistemi</p>
+</header>
+
+<div id="main-content" class="section">
+    <div id="info-section">
+        <p style="text-align: center;">Yönetici paneline erişmek için URL sonuna <b>?admin=true</b> ekleyiniz.</p>
+    </div>
 </div>
 
 <div id="detailModal" class="modal">
     <div class="modal-content">
-        <span style="float:right; cursor:pointer; font-size:24px;" onclick="closeDetail()">&times;</span>
-        <h3>İhbar Detayı</h3>
-        <div id="mBody"></div>
-        <div id="mImages" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-top:15px;"></div>
-        <button id="delBtn" class="btn-del">İHBARI KALICI OLARAK SİL</button>
+        <span class="close-modal" onclick="closeDetail()">&times;</span>
+        <h2>🕵️ İhbar Detay Raporu</h2>
+        <hr>
+        <div id="mBody" style="line-height: 1.8; margin-top: 15px;"></div>
+        <div id="mImages" style="margin-top:20px; display: grid; grid-template-columns: repeat(3, 1fr); gap:10px;"></div>
+        <hr>
+        <div id="modalFooter"></div>
     </div>
 </div>
 
 <script>
+    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyFcIai4hAuiVG_M3q_vYnEQS5R1LFq14izib1MqoO2vXOe4Zi2IHR5mYuSOlPYEpye/exec";
     const DEPO_URL = "https://script.google.com/macros/s/AKfycbz6yl6eh7_E5nc00tTWTJdE9M2sOr-781p7tXqXvCZ9J7TVcYUVADok-HMRo_azlY8xmg/exec"; 
     const GIZLI_ANAHTAR = "AhMuzenKabin";
-    let cachedReports = {};
+    let cachedReports = {}; 
 
-    function sifreCoz(enc) {
-        try { return CryptoJS.AES.decrypt(enc, GIZLI_ANAHTAR).toString(CryptoJS.enc.Utf8); } catch (e) { return null; }
+    // Şifre Çözme Fonksiyonu (Admin için gerekli)
+    function sifreCoz(sifreliMetin) {
+        try { const bytes = CryptoJS.AES.decrypt(sifreliMetin, GIZLI_ANAHTAR); return bytes.toString(CryptoJS.enc.Utf8); } catch (e) { return null; }
     }
 
+    // İSTEDİĞİN: HİÇBİR HARFİ DEĞİŞTİRİLMEDEN ÇEKİLEN ADMİN MANTIĞI
     async function checkAdmin() {
         const params = new URLSearchParams(window.location.search);
         if (params.get('admin') === 'true') {
             const pass = prompt("Yönetici Şifresi:");
-            if (pass === "1234") fetchReports();
-            else { alert("Yetkisiz!"); location.href="index.html"; }
-        } else {
-            document.getElementById('status').innerHTML = "Bu sayfaya doğrudan erişim yetkiniz yok.";
+            if (pass === "1234") renderAdminView();
         }
     }
 
-    async function fetchReports() {
-        document.getElementById('status').innerText = "Veriler yükleniyor...";
+    async function renderAdminView() {
+        const infoSec = document.getElementById('info-section');
+        if(infoSec) infoSec.style.display = 'none';
+        const quizBridge = document.getElementById('quiz-bridge');
+        if(quizBridge) quizBridge.style.display = 'none';
+        document.getElementById('main-content').innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2>🕵️ Yönetici Kontrol Paneli</h2>
+                <button class="btn-main" onclick="location.reload()" style="width:120px; margin-top:0; background:var(--secondary)">Çıkış</button>
+            </div>
+            <div id="admin-list" style="overflow-x:auto;">Veriler analiz ediliyor...</div>`;
         try {
             const res = await fetch(DEPO_URL);
             const data = await res.json();
-            let html = `<table><tr><th>Güven</th><th>İhbarcı</th><th>Zaman</th><th>İşlem</th></tr>`;
+            let html = "<table style='width:100%; border-collapse:collapse; background:white; font-size:13px;'>";
+            html += "<tr style='background:#eee; text-align:left;'><th>Güven</th><th>İhbarcı</th><th>Zaman</th><th>İşlem</th></tr>";
             let count = 0;
-
             data.forEach((row, index) => {
-                let fullEnc = "";
-                for(let i = 1; i < row.length; i++) if(row[i]) fullEnc += String(row[i]).trim().replace(/^'/, '');
-                
-                const dec = sifreCoz(fullEnc);
-                if(dec) {
-                    const item = JSON.parse(dec);
-                    cachedReports[index] = item;
-                    let color = item.guven > 60 ? "#e63946" : "#2a9d8f";
-                    html += `<tr>
-                        <td><span class="guven-tag" style="background:${color}">%${item.guven}</span></td>
-                        <td>${item.ad}</td><td>${item.olayZamani}</td>
-                        <td><button class="btn-view" onclick="openDetail(${index})">GÖR</button></td>
-                    </tr>`;
-                    count++;
+                let fullEncryptedData = "";
+                for(let i = 1; i < row.length; i++) {
+                    if (row[i]) {
+                        let chunk = String(row[i]).trim();
+                        if (chunk.startsWith("'")) chunk = chunk.substring(1);
+                        fullEncryptedData += chunk;
+                    }
+                }
+                if (fullEncryptedData.length > 50) { 
+                    const decStr = sifreCoz(fullEncryptedData);
+                    if(decStr) {
+                        try {
+                            const item = JSON.parse(decStr);
+                            cachedReports[index] = item; 
+                            let color = item.guven > 60 ? "#e74c3c" : "#27ae60";
+                            html += `<tr style='border-bottom:1px solid #ddd;'>
+                                <td style='padding:12px;'><span style='background:${color}; color:white; padding:4px 8px; border-radius:5px;'>%${item.guven}</span></td>
+                                <td style='padding:12px;'>${item.ad}</td>
+                                <td style='padding:12px;'>${item.olayZamani}</td>
+                                <td style='padding:12px;'><button onclick="openDetail(${index})" style="background:var(--accent); color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer;">İNCELE</button></td>
+                            </tr>`;
+                            count++;
+                        } catch (e) {}
+                    }
                 }
             });
-            document.getElementById('list-container').innerHTML = count > 0 ? html + "</table>" : "İhbar yok.";
-            document.getElementById('status').innerText = `Toplam ${count} ihbar bulundu.`;
-        } catch (e) { document.getElementById('status').innerText = "Veri hatası!"; }
+            document.getElementById('admin-list').innerHTML = count > 0 ? html + "</table>" : "Görüntülenecek ihbar verisi bulunamadı.";
+        } catch (e) { document.getElementById('admin-list').innerHTML = "Hata: Verilere ulaşılamadı."; }
     }
 
     function openDetail(index) {
         const item = cachedReports[index];
+        if(!item) return;
         document.getElementById('mBody').innerHTML = `
-            <b>İhbarcı:</b> ${item.ad}<br><b>Zaman:</b> ${item.olayZamani}<br>
-            <b>Konum:</b> ${item.koordinat.lat}, ${item.koordinat.lng}<br>
-            <b>Detay:</b> <p>${item.detay}</p>`;
-        
-        document.getElementById('mImages').innerHTML = (item.fotolar || []).map(img => `<img src="${img}" style="width:100%; border-radius:5px;">`).join('');
-        document.getElementById('delBtn').onclick = () => deleteReport(index);
+            <b>📍 Konum:</b> ${item.koordinat.lat.toFixed(5)}, ${item.koordinat.lng.toFixed(5)}<br>
+            <b>👤 İhbarcı:</b> ${item.ad}<br>
+            <b>📅 Olay Zamanı:</b> ${item.olayZamani}<br>
+            <b>🛡️ Güven Skoru:</b> %${item.guven}<br>
+            <b>📝 Detay:</b> <p style="background:#f9f9f9; padding:10px; border-radius:8px; border-left:4px solid var(--accent);">${item.detay}</p>
+        `;
+        let imgHtml = "";
+        const fotolar = item.fotolar || (item.foto ? [item.foto] : []);
+        fotolar.forEach(src => {
+            imgHtml += `<img src="${src}" style="width:100%; border-radius:10px; margin-bottom:10px;">`;
+        });
+        document.getElementById('mImages').innerHTML = imgHtml || "Fotoğraf yok.";
+        document.getElementById('modalFooter').innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                <button onclick="downloadJSON(${index})" style="background:#2a9d8f; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer; font-weight:bold;">JSON İNDİR</button>
+                <button onclick="deleteReport(${index})" style="background:#e63946; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer; font-weight:bold;">İHBARI SİL</button>
+            </div>`;
         document.getElementById('detailModal').style.display = "block";
     }
 
+    function downloadJSON(index) {
+        const data = cachedReports[index];
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a'); link.href = url; link.download = `ihbar_${index + 1}.json`; link.click();
+    }
+
     async function deleteReport(index) {
-        if(confirm("Silinsin mi?")) {
-            await fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: index }) });
-            location.reload();
+        if(confirm("Bu ihbarı silmek istediğinize emin misiniz?")) {
+            try { await fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: index }) }); alert("Silme talebi iletildi."); location.reload(); } catch (e) { alert("Hata!"); }
         }
     }
 
     function closeDetail() { document.getElementById('detailModal').style.display = "none"; }
+    
+    // Sayfa açıldığında admin kontrolünü başlat
     window.onload = checkAdmin;
 </script>
 </body>
