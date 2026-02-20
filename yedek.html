@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kültürel Mirasımızı Koruma Portalı | FLL LEGOLOGLAR</title>
-    <link rel="icon" type="image/x-icon" id="ana-logo" href="Logolar/Legologlarlogo.jpeg" >
+    <link rel="icon" type="image/x-icon" id="ana-logo" href="logo.png" >
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -12,12 +12,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
     <style>
-
         #ana-logo {
-            width: 300px; /* Buradaki sayıyı artırdıkça resim büyür */
-            height: auto;  /* Oran bozulmasın diye otomatik ayarlar */
-            padding: 5px; /* Etrafına biraz nefes payı bırakır */
-    }
+            width: 300px; 
+            height: auto;  
+            padding: 5px; 
+        }
         :root {
             --primary: #00b4d8; --secondary: #03045e; --earth: #935805;
             --bg: #f1f3f8; --white: #ffffff; --accent: #0096c7; --light-blue: #caf0f8;
@@ -34,7 +33,6 @@
         label { font-weight: bold; margin-bottom: 8px; display: block; }
         input, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--light-blue); box-sizing: border-box; font-family: inherit; font-size: 14px; }
         
-        /* Gelişmiş Tekli Yükleme Alanı ve Önizleme */
         .upload-area { border: 2px dashed var(--accent); border-radius: 15px; padding: 20px; text-align: center; background: #fafafa; cursor: pointer; transition: 0.3s; margin-bottom: 15px; }
         .upload-area:hover { background: var(--light-blue); }
         
@@ -48,6 +46,17 @@
         
         .quiz-bridge { margin-top: 30px; text-align: center; border-top: 2px dashed #ccc; padding-top: 20px; }
         .btn-quiz-go { background: var(--earth); color: white; border: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
+
+        /* Footer Alanı Güncellenmiş CSS */
+        .footer-copyright { margin-top: 35px; padding-top: 20px; text-align: center; border-top: 2px dashed #ccc; }
+        .footer-logos { display: flex; justify-content: center; align-items: center; gap: 30px; margin-bottom: 15px; flex-wrap: wrap; }
+        
+        /* Ana logo daha büyük durması için */
+        .footer-logo-main { height: 70px; width: auto; border-radius: 5px; }
+        /* FLL logosu daha dengeli durması için */
+        .footer-logo-fll { height: 45px; width: auto; opacity: 0.9; }
+        
+        .copyright-text { font-size: 12px; color: #666; line-height: 1.6; }
 
         .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto; }
         .modal-content { background: white; margin: 3% auto; padding: 25px; border-radius: 15px; width: 90%; max-width: 700px; position: relative; color: #333; }
@@ -128,6 +137,18 @@
                 <i class="fas fa-graduation-cap"></i> Teste Başla !
             </a>
         </div>
+
+        <div class="footer-copyright">
+            <div class="footer-logos">
+                <img src="logo.png" alt="Legologlar" class="footer-logo-main">
+                <img src="Fll-yatay-logo.png" alt="FLL" class="footer-logo-fll" onerror="this.style.display='none'">
+            </div>
+            <div class="copyright-text">
+                <strong>© 2024 FLL LEGOLOGLAR Takımı</strong><br>
+                Bu portal, kültürel mirasın korunmasına yönelik bir sosyal sorumluluk projesidir. <br>
+                İçerikler izinsiz kullanılamaz.
+            </div>
+        </div>
     </div>
 </div>
 
@@ -148,7 +169,7 @@
     const DEPO_URL = "https://script.google.com/macros/s/AKfycbz6yl6eh7_E5nc00tTWTJdE9M2sOr-781p7tXqXvCZ9J7TVcYUVADok-HMRo_azlY8xmg/exec"; 
     const GIZLI_ANAHTAR = "AhMuzenKabin";
 
-    let photoArray = []; // Birden fazla fotoğrafı tutmak için dizi
+    let photoArray = []; 
     let cachedReports = {}; 
     
     var map = L.map('map').setView([39.0, 35.0], 6);
@@ -161,15 +182,12 @@
         marker = L.marker(selectedLoc).addTo(map);
     });
 
-    // Çoklu Dosya İşleme Fonksiyonu
     function handleMultipleFiles(input) {
         const files = Array.from(input.files);
-        
         if (photoArray.length + files.length > 3) {
             alert("En fazla 3 fotoğraf yükleyebilirsiniz!");
             return;
         }
-
         files.forEach(file => {
             const reader = new FileReader();
             reader.onload = function (e) {
@@ -182,7 +200,6 @@
                     canvas.width = width; canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    
                     const base64 = canvas.toDataURL('image/jpeg', 0.6);
                     photoArray.push(base64);
                     renderPreviews();
@@ -205,7 +222,6 @@
             `;
             container.appendChild(div);
         });
-        
         const statusText = document.getElementById('upload-status-text');
         if(photoArray.length > 0) {
             statusText.innerText = `${photoArray.length} Fotoğraf Eklendi (Kalan: ${3 - photoArray.length})`;
@@ -232,10 +248,7 @@
         if (/(.)\1\1/.test(temizMetin)) skor -= 30;
         const anahtar = ["kazı", "kepçe", "gece", "buldum", "tarihi", "lahit", "define", "şüpheli"];
         anahtar.forEach(k => { if (temizMetin.includes(k)) skor += 10; });
-        
-        // Fotoğraf sayısı bonusu
         skor += (photoArray.length * 1); 
-        
         return Math.max(0, Math.min(skor, 100));
     }
 
@@ -255,8 +268,6 @@
         const oDate = document.getElementById('eventDate').value;
         const oTime = document.getElementById('eventTime').value;
         if(!selectedLoc || desc.length < 5) { alert("Lütfen haritadan konum seçin ve açıklama yazın!"); return; }
-        
-        // Birden fazla fotoğrafı gönderiyoruz
         const rawData = { 
             ad: name, 
             detay: desc, 
@@ -266,7 +277,6 @@
             fotolar: photoArray, 
             guven: hesaplaAkilliGuven(desc) 
         };
-        
         const securePackage = sifrele(JSON.stringify(rawData));
         try {
             fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ secureData: securePackage }) });
@@ -280,24 +290,21 @@
         const params = new URLSearchParams(window.location.search);
         if (params.get('admin') === 'true') {
             const pass = prompt("Yönetici Şifresi:");
-            if (pass === "L3g0l0gl@r1881") renderAdminView();
+            if (pass === "1234") renderAdminView();
         }
     }
 
     async function renderAdminView() {
         const infoSec = document.getElementById('info-section');
         if(infoSec) infoSec.style.display = 'none';
-        
         const quizBridge = document.getElementById('quiz-bridge');
         if(quizBridge) quizBridge.style.display = 'none';
-
         document.getElementById('main-content').innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <h2>🕵️ Yönetici Kontrol Paneli</h2>
                 <button class="btn-main" onclick="location.reload()" style="width:120px; margin-top:0; background:var(--secondary)">Çıkış</button>
             </div>
             <div id="admin-list" style="overflow-x:auto;">Veriler analiz ediliyor...</div>`;
-        
         try {
             const res = await fetch(DEPO_URL);
             const data = await res.json();
@@ -345,15 +352,12 @@
             <b>🛡️ Güven Skoru:</b> %${item.guven}<br>
             <b>📝 Detay:</b> <p style="background:#f9f9f9; padding:10px; border-radius:8px; border-left:4px solid var(--accent);">${item.detay}</p>
         `;
-        
-        // Detayda çoklu fotoğrafları gösterme
         let imgHtml = "";
         const fotolar = item.fotolar || (item.foto ? [item.foto] : []);
         fotolar.forEach(src => {
             imgHtml += `<img src="${src}" style="width:100%; border-radius:10px; margin-bottom:10px;">`;
         });
         document.getElementById('mImages').innerHTML = imgHtml || "Fotoğraf yok.";
-        
         document.getElementById('modalFooter').innerHTML = `
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
                 <button onclick="downloadJSON(${index})" style="background:#2a9d8f; color:white; border:none; padding:15px; border-radius:10px; cursor:pointer; font-weight:bold;">JSON İNDİR</button>
