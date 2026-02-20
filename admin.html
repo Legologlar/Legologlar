@@ -3,100 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yönetici Paneli | FLL LEGOLOGLAR</title>
+    <title>Kültürel Mirasımızı Koruma Portalı | Yönetici</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
-        :root { --primary: #03045e; --accent: #0096c7; --bg: #f1f3f8; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; }
-        .container { background: white; max-width: 900px; margin: auto; padding: 30px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        :root { --primary: #00b4d8; --secondary: #03045e; --accent: #0096c7; --bg: #f1f3f8; --white: #ffffff; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--secondary); }
+        header { background: linear-gradient(135deg, var(--secondary), var(--primary)); color: white; padding: 30px 20px; text-align: center; }
+        .section { background: var(--white); border-radius: 20px; padding: 30px; margin: 20px auto; max-width: 850px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .btn-main { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 12px; cursor: pointer; font-weight: bold; }
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto; }
+        .modal-content { background: white; margin: 3% auto; padding: 25px; border-radius: 15px; width: 90%; max-width: 700px; position: relative; color: #333; }
+        table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; }
         th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
-        th { background: #eee; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); overflow-y: auto; }
-        .modal-content { background: white; margin: 5% auto; padding: 25px; border-radius: 15px; width: 90%; max-width: 600px; }
-        .btn-view { background: var(--accent); color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
-        .btn-del { background: #e63946; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div id="admin-container" class="container" style="display:none;">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2>🕵️ Yönetici Kontrol Paneli</h2>
-        <button onclick="location.href='index.html'" style="padding:10px;">Çıkış Yap</button>
-    </div>
-    <div id="admin-list">Veriler yükleniyor...</div>
+<header>
+    <h1>🏛️Ortak Kültürel Mirasımızı Koruma portalı</h1>
+    <p>Yönetici Paneli</p>
+</header>
+
+<div id="main-content" class="section">
+    <div id="admin-list" style="overflow-x:auto;">Admin erişimi bekleniyor...</div>
 </div>
 
 <div id="detailModal" class="modal">
     <div class="modal-content">
-        <span style="float:right; cursor:pointer; font-size:24px;" onclick="closeDetail()">&times;</span>
-        <h2>İhbar Detayı</h2>
-        <hr>
-        <div id="mBody"></div>
-        <div id="mImages" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:15px;"></div>
-        <hr>
-        <div id="modalFooter" style="margin-top:15px;"></div>
+        <span style="position:absolute; right:20px; top:10px; font-size:30px; cursor:pointer;" onclick="closeDetail()">&times;</span>
+        <h2>🕵️ İhbar Detay Raporu</h2>
+        <hr><div id="mBody" style="line-height: 1.8;"></div>
+        <div id="mImages" style="margin-top:20px; display: grid; grid-template-columns: repeat(3, 1fr); gap:10px;"></div>
+        <hr><div id="modalFooter"></div>
     </div>
 </div>
 
 <script>
-    const DEPO_URL = "https://script.google.com/macros/s/AKfycbz6yl6eh7_E5nc00tTWTJdE9M2sOr-781p7tXqXvCZ9J7TVcYUVADok-HMRo_azlY8xmg/exec";
+    const DEPO_URL = "https://script.google.com/macros/s/AKfycbz6yl6eh7_E5nc00tTWTJdE9M2sOr-781p7tXqXvCZ9J7TVcYUVADok-HMRo_azlY8xmg/exec"; 
     const GIZLI_ANAHTAR = "AhMuzenKabin";
     let cachedReports = {};
 
     function sifreCoz(sifreliMetin) {
-        try { 
-            const bytes = CryptoJS.AES.decrypt(sifreliMetin, GIZLI_ANAHTAR); 
-            return bytes.toString(CryptoJS.enc.Utf8); 
-        } catch (e) { return null; }
+        try { const bytes = CryptoJS.AES.decrypt(sifreliMetin, GIZLI_ANAHTAR); return bytes.toString(CryptoJS.enc.Utf8); } catch (e) { return null; }
     }
 
-    async function loadAdmin() {
-        const pass = prompt("Yönetici Şifresi:");
-        if (pass !== "1234") { alert("Yetkisiz giriş!"); location.href="index.html"; return; }
-        
-        document.getElementById('admin-container').style.display = 'block';
+    async function checkAdmin() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('admin') === 'true') {
+            const pass = prompt("Yönetici Şifresi:");
+            if (pass === "1234") renderAdminView();
+            else { alert("Hatalı şifre!"); location.href="index.html"; }
+        } else {
+            document.getElementById('admin-list').innerHTML = "Bu sayfaya erişim yetkiniz yok. Lütfen ana sayfaya dönün.";
+        }
+    }
+
+    async function renderAdminView() {
+        document.getElementById('admin-list').innerHTML = "Veriler analiz ediliyor...";
         try {
             const res = await fetch(DEPO_URL);
             const data = await res.json();
-            let html = "<table><tr><th>Güven</th><th>İhbarcı</th><th>Zaman</th><th>İşlem</th></tr>";
-            
+            let html = "<table><tr style='background:#eee;'><th>Güven</th><th>İhbarcı</th><th>Zaman</th><th>İşlem</th></tr>";
+            let count = 0;
             data.forEach((row, index) => {
                 let fullEnc = "";
-                for(let i=1; i<row.length; i++) if(row[i]) fullEnc += String(row[i]).trim().replace(/^'/, '');
+                for(let i = 1; i < row.length; i++) if (row[i]) fullEnc += String(row[i]).trim().replace(/^'/, '');
                 
                 const decStr = sifreCoz(fullEnc);
                 if(decStr) {
                     const item = JSON.parse(decStr);
                     cachedReports[index] = item;
+                    let color = item.guven > 60 ? "#e74c3c" : "#27ae60";
                     html += `<tr>
-                        <td>%${item.guven}</td>
-                        <td>${item.ad}</td>
-                        <td>${item.olayZamani}</td>
-                        <td><button class="btn-view" onclick="openDetail(${index})">İNCELE</button></td>
+                        <td><span style='background:${color}; color:white; padding:4px 8px; border-radius:5px;'>%${item.guven}</span></td>
+                        <td>${item.ad}</td><td>${item.olayZamani}</td>
+                        <td><button onclick="openDetail(${index})" class="btn-main" style="padding:5px 10px;">İNCELE</button></td>
                     </tr>`;
+                    count++;
                 }
             });
-            document.getElementById('admin-list').innerHTML = html + "</table>";
-        } catch (e) { document.getElementById('admin-list').innerHTML = "Veri yüklenemedi."; }
+            document.getElementById('admin-list').innerHTML = count > 0 ? html + "</table>" : "İhbar yok.";
+        } catch (e) { document.getElementById('admin-list').innerHTML = "Hata!"; }
     }
 
     function openDetail(index) {
         const item = cachedReports[index];
-        document.getElementById('mBody').innerHTML = `
-            <b>👤 İhbarcı:</b> ${item.ad}<br>
-            <b>📅 Zaman:</b> ${item.olayZamani}<br>
-            <b>📍 Konum:</b> ${item.koordinat.lat}, ${item.koordinat.lng}<br>
-            <b>📝 Mesaj:</b> <p>${item.detay}</p>
-        `;
-        document.getElementById('mImages').innerHTML = (item.fotolar || []).map(img => `<img src="${img}" style="width:100%; border-radius:5px;">`).join('');
-        document.getElementById('modalFooter').innerHTML = `<button class="btn-del" onclick="deleteReport(${index})">İHBARI SİL</button>`;
+        document.getElementById('mBody').innerHTML = `<b>👤 İhbarcı:</b> ${item.ad}<br><b>📅 Zaman:</b> ${item.olayZamani}<br><b>📝 Detay:</b> <p>${item.detay}</p>`;
+        document.getElementById('mImages').innerHTML = (item.fotolar || []).map(src => `<img src="${src}" style="width:100%; border-radius:10px;">`).join('');
+        document.getElementById('modalFooter').innerHTML = `<button onclick="deleteReport(${index})" class="btn-main" style="background:#e63946;">SİL</button>`;
         document.getElementById('detailModal').style.display = "block";
     }
 
-    function closeDetail() { document.getElementById('detailModal').style.display = "none"; }
-    
     async function deleteReport(index) {
         if(confirm("Silinsin mi?")) {
             await fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: index }) });
@@ -104,7 +102,8 @@
         }
     }
 
-    window.onload = loadAdmin;
+    function closeDetail() { document.getElementById('detailModal').style.display = "none"; }
+    window.onload = checkAdmin;
 </script>
 </body>
 </html>
