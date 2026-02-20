@@ -11,11 +11,12 @@
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--secondary); }
         header { background: linear-gradient(135deg, var(--secondary), var(--primary)); color: white; padding: 30px 20px; text-align: center; }
         .section { background: var(--white); border-radius: 20px; padding: 30px; margin: 20px auto; max-width: 850px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .btn-main { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 12px; cursor: pointer; font-weight: bold; }
+        .btn-main { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: bold; }
         .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto; }
         .modal-content { background: white; margin: 3% auto; padding: 25px; border-radius: 15px; width: 90%; max-width: 700px; position: relative; color: #333; }
-        table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; margin-top: 20px; }
         th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #f8f9fa; }
     </style>
 </head>
 <body>
@@ -50,59 +51,85 @@
 
     async function checkAdmin() {
         const params = new URLSearchParams(window.location.search);
+        // Sadece URL'de ?admin=true varsa çalışır
         if (params.get('admin') === 'true') {
             const pass = prompt("Yönetici Şifresi:");
-            if (pass === "1234") renderAdminView();
-            else { alert("Hatalı şifre!"); location.href="index.html"; }
+            if (pass === "1234") {
+                renderAdminView();
+            } else {
+                alert("Hatalı şifre!");
+                location.href = "index.html"; 
+            }
         } else {
             document.getElementById('admin-list').innerHTML = "Bu sayfaya erişim yetkiniz yok. Lütfen ana sayfaya dönün.";
         }
     }
 
     async function renderAdminView() {
-        document.getElementById('admin-list').innerHTML = "Veriler analiz ediliyor...";
+        document.getElementById('admin-list').innerHTML = "Veriler analiz ediliyor, lütfen bekleyin...";
         try {
             const res = await fetch(DEPO_URL);
             const data = await res.json();
-            let html = "<table><tr style='background:#eee;'><th>Güven</th><th>İhbarcı</th><th>Zaman</th><th>İşlem</th></tr>";
+            let html = "<table><tr><th>Güven</th><th>İhbarcı</th><th>Zaman</th><th>İşlem</th></tr>";
             let count = 0;
+            
             data.forEach((row, index) => {
                 let fullEnc = "";
                 for(let i = 1; i < row.length; i++) if (row[i]) fullEnc += String(row[i]).trim().replace(/^'/, '');
                 
                 const decStr = sifreCoz(fullEnc);
                 if(decStr) {
-                    const item = JSON.parse(decStr);
-                    cachedReports[index] = item;
-                    let color = item.guven > 60 ? "#e74c3c" : "#27ae60";
-                    html += `<tr>
-                        <td><span style='background:${color}; color:white; padding:4px 8px; border-radius:5px;'>%${item.guven}</span></td>
-                        <td>${item.ad}</td><td>${item.olayZamani}</td>
-                        <td><button onclick="openDetail(${index})" class="btn-main" style="padding:5px 10px;">İNCELE</button></td>
-                    </tr>`;
-                    count++;
+                    try {
+                        const item = JSON.parse(decStr);
+                        cachedReports[index] = item;
+                        let color = item.guven > 60 ? "#e74c3c" : "#27ae60";
+                        html += `<tr>
+                            <td><span style='background:${color}; color:white; padding:4px 8px; border-radius:5px;'>%${item.guven}</span></td>
+                            <td>${item.ad}</td><td>${item.olayZamani}</td>
+                            <td><button onclick="openDetail(${index})" class="btn-main">İNCELE</button></td>
+                        </tr>`;
+                        count++;
+                    } catch(e) { console.log("JSON Parse Hatası"); }
                 }
             });
-            document.getElementById('admin-list').innerHTML = count > 0 ? html + "</table>" : "İhbar yok.";
-        } catch (e) { document.getElementById('admin-list').innerHTML = "Hata!"; }
+            document.getElementById('admin-list').innerHTML = count > 0 ? html + "</table>" : "Henüz bir ihbar kaydı bulunmuyor.";
+        } catch (e) { document.getElementById('admin-list').innerHTML = "Veri çekme hatası oluştu."; }
     }
 
     function openDetail(index) {
         const item = cachedReports[index];
-        document.getElementById('mBody').innerHTML = `<b>👤 İhbarcı:</b> ${item.ad}<br><b>📅 Zaman:</b> ${item.olayZamani}<br><b>📝 Detay:</b> <p>${item.detay}</p>`;
-        document.getElementById('mImages').innerHTML = (item.fotolar || []).map(src => `<img src="${src}" style="width:100%; border-radius:10px;">`).join('');
-        document.getElementById('modalFooter').innerHTML = `<button onclick="deleteReport(${index})" class="btn-main" style="background:#e63946;">SİL</button>`;
+        if(!item) return;
+        document.getElementById('mBody').innerHTML = `
+            <b>👤 İhbarcı:</b> ${item.ad}<br>
+            <b>📅 Olay Zamanı:</b> ${item.olayZamani}<br>
+            <b>📍 Koordinat:</b> ${item.koordinat ? item.koordinat.lat + "," + item.koordinat.lng : "Belirtilmedi"}<br>
+            <b>📝 Detay:</b> <p style="background:#f9f9f9; padding:10px; border-radius:8px;">${item.detay}</p>`;
+        
+        let imgHtml = "";
+        const fotolar = item.fotolar || [];
+        fotolar.forEach(src => {
+            imgHtml += `<img src="${src}" style="width:100%; border-radius:10px;">`;
+        });
+        document.getElementById('mImages').innerHTML = imgHtml || "Fotoğraf eklenmemiş.";
+        
+        document.getElementById('modalFooter').innerHTML = `
+            <button onclick="deleteReport(${index})" class="btn-main" style="background:#e63946; width:100%;">BU İHBARI SİL</button>`;
         document.getElementById('detailModal').style.display = "block";
     }
 
     async function deleteReport(index) {
-        if(confirm("Silinsin mi?")) {
-            await fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: index }) });
-            location.reload();
+        if(confirm("Bu ihbarı silmek istediğinize emin misiniz?")) {
+            try {
+                await fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", rowIndex: index }) });
+                alert("Silme talebi gönderildi.");
+                location.reload();
+            } catch (e) { alert("Hata oluştu."); }
         }
     }
 
     function closeDetail() { document.getElementById('detailModal').style.display = "none"; }
+    
+    // Sayfa yüklendiğinde admin kontrolünü başlat
     window.onload = checkAdmin;
 </script>
 </body>
