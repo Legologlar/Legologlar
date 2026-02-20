@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kültürel Mirasımızı Koruma Portalı | FLL LEGOLOGLAR</title>
+    <link rel="icon" type="image/x-icon" id="ana-logo" href="logo.png" >
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+    <style>
+        #ana-logo { width: 300px; height: auto; padding: 5px; }
+        :root {
+            --primary: #00b4d8; --secondary: #03045e; --earth: #935805;
+            --bg: #f1f3f8; --white: #ffffff; --accent: #0096c7; --light-blue: #caf0f8;
+        }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--secondary); }
+        header { background: linear-gradient(135deg, var(--secondary), var(--primary)); color: white; padding: 30px 20px; text-align: center; }
+        .section { background: var(--white); border-radius: 20px; padding: 30px; margin: 20px auto; max-width: 850px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .stat-card { background: var(--light-blue); padding: 15px; border-radius: 12px; text-align: center; font-weight: bold; margin-bottom: 20px; }
+        #map { height: 350px; border-radius: 15px; border: 2px solid var(--light-blue); margin: 10px 0 20px 0; z-index: 1; width: 100%; }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        label { font-weight: bold; margin-bottom: 8px; }
+        input, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--light-blue); box-sizing: border-box; }
+        .upload-area { border: 2px dashed var(--accent); border-radius: 15px; padding: 20px; text-align: center; background: #fafafa; cursor: pointer; }
+        .preview-container { display: flex; gap: 10px; margin-top: 15px; justify-content: center; flex-wrap: wrap; }
+        .preview-item { position: relative; width: 80px; height: 80px; border-radius: 10px; border: 2px solid var(--accent); overflow: hidden; }
+        .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+        .remove-img { position: absolute; top: 2px; right: 2px; background: rgba(230, 57, 70, 0.9); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; }
+        .btn-main { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .quiz-bridge { margin-top: 30px; text-align: center; border-top: 2px dashed #ccc; padding-top: 20px; }
+        .btn-bridge { padding: 12px 25px; border-radius: 30px; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; margin: 5px; }
+        .btn-quiz { background: var(--earth); color: white; }
+        .btn-admin-link { background: #546e7a; color: white; }
+        .footer-copyright { margin-top: 35px; padding-top: 20px; text-align: center; border-top: 2px dashed #ccc; }
+        .footer-logos { display: flex; justify-content: center; align-items: center; gap: 30px; margin-bottom: 15px; }
+        .footer-logo-main { height: 70px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🏛️ Ortak Kültürel Mirasımızı Koruma Portalı</h1>
+        <p>İhbar Sistemi</p>
+    </header>
+
+    <div class="section">
+        <div class="stat-card">Kayıtlı İhbar Sayısı: <span id="countVal">0</span></div>
+        
+        <div class="form-group">
+            <label>İhbarcı Bilgisi</label>
+            <input type="text" id="rName" placeholder="Ad Soyad (Anonim için boş bırakın)">
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group"><label>Olay Tarihi</label><input type="date" id="eventDate"></div>
+            <div class="form-group"><label>Olay Saati</label><input type="time" id="eventTime"></div>
+        </div>
+
+        <div class="form-group">
+            <label>Olay Detayı</label>
+            <textarea id="rDesc" rows="5" placeholder="Şüpheli faaliyeti açıklayın..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Kanıt Fotoğrafları (Max 3)</label>
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="handleMultipleFiles(this)">
+                <i class="fas fa-camera"></i> <p id="upload-status-text">Tıkla ve Fotoğraf Seç</p>
+                <div class="preview-container" id="previewContainer"></div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Olay Konumu (Haritadan Seçin)</label>
+            <div id="map"></div>
+        </div>
+        
+        <button class="btn-main" onclick="submitReport()">İHBARI GÖNDER</button>
+
+        <div class="quiz-bridge">
+            <a href="quiz.html" class="btn-bridge btn-quiz"><i class="fas fa-graduation-cap"></i> Uzmanlık Testi</a>
+            <a href="admin.html" class="btn-bridge btn-admin-link"><i class="fas fa-user-shield"></i> Yönetici Girişi</a>
+        </div>
+
+        <div class="footer-copyright">
+            <div class="footer-logos">
+                <img src="logo.png" class="footer-logo-main">
+            </div>
+            <div class="copyright-text"><strong>© 2024 FLL LEGOLOGLAR Takımı</strong></div>
+        </div>
+    </div>
+
+<script>
+    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyFcIai4hAuiVG_M3q_vYnEQS5R1LFq14izib1MqoO2vXOe4Zi2IHR5mYuSOlPYEpye/exec";
+    const DEPO_URL = "https://script.google.com/macros/s/AKfycbz6yl6eh7_E5nc00tTWTJdE9M2sOr-781p7tXqXvCZ9J7TVcYUVADok-HMRo_azlY8xmg/exec"; 
+    const GIZLI_ANAHTAR = "AhMuzenKabin";
+
+    let photoArray = []; 
+    var map = L.map('map').setView([39.0, 35.0], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    var marker = null, selectedLoc = null;
+
+    map.on('click', e => {
+        selectedLoc = e.latlng;
+        if(marker) map.removeLayer(marker);
+        marker = L.marker(selectedLoc).addTo(map);
+    });
+
+    function handleMultipleFiles(input) {
+        const files = Array.from(input.files);
+        if (photoArray.length + files.length > 3) { alert("Max 3 fotoğraf!"); return; }
+        files.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 800; canvas.height = (800 / img.width) * img.height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    photoArray.push(canvas.toDataURL('image/jpeg', 0.6));
+                    renderPreviews();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function renderPreviews() {
+        const container = document.getElementById('previewContainer');
+        container.innerHTML = photoArray.map((src, i) => `
+            <div class="preview-item"><img src="${src}"><button class="remove-img" onclick="removePhoto(${i})">×</button></div>
+        `).join('');
+    }
+
+    function removePhoto(i) { photoArray.splice(i, 1); renderPreviews(); }
+
+    function sifrele(metin) { return CryptoJS.AES.encrypt(metin, GIZLI_ANAHTAR).toString(); }
+
+    async function submitReport() {
+        const desc = document.getElementById('rDesc').value;
+        if(!selectedLoc || desc.length < 5) { alert("Eksik bilgi!"); return; }
+        const rawData = { 
+            ad: document.getElementById('rName').value || "Anonim", 
+            detay: desc, koordinat: selectedLoc, tarih: new Date().toLocaleString(),
+            olayZamani: `${document.getElementById('eventDate').value} ${document.getElementById('eventTime').value}`,
+            fotolar: photoArray, guven: 50 
+        };
+        const securePackage = sifrele(JSON.stringify(rawData));
+        try {
+            fetch(DEPO_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ secureData: securePackage }) });
+            fetch(BACKEND_URL, { method: 'POST', mode: 'no-cors' });
+            alert("İhbar gönderildi."); location.reload();
+        } catch (e) { alert("Hata!"); }
+    }
+
+    async function syncCount() {
+        try { const r = await fetch(BACKEND_URL); const d = await r.json(); document.getElementById('countVal').innerText = d.total; } catch(e){}
+    }
+    syncCount();
+</script>
+</body>
+</html>
