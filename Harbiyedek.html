@@ -47,10 +47,15 @@
         .quiz-bridge { margin-top: 30px; text-align: center; border-top: 2px dashed #ccc; padding-top: 20px; }
         .btn-quiz-go { background: var(--earth); color: white; border: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
 
-        /* Yeni Eklenen Telif Alanı CSS */
+        /* Footer Alanı Güncellenmiş CSS */
         .footer-copyright { margin-top: 35px; padding-top: 20px; text-align: center; border-top: 2px dashed #ccc; }
-        .footer-logos { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
-        .footer-mini-img { height: 45px; width: auto; border-radius: 5px; opacity: 0.9; }
+        .footer-logos { display: flex; justify-content: center; align-items: center; gap: 30px; margin-bottom: 15px; flex-wrap: wrap; }
+        
+        /* Ana logo daha büyük durması için */
+        .footer-logo-main { height: 70px; width: auto; border-radius: 5px; }
+        /* FLL logosu daha dengeli durması için */
+        .footer-logo-fll { height: 45px; width: auto; opacity: 0.9; }
+        
         .copyright-text { font-size: 12px; color: #666; line-height: 1.6; }
 
         .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); overflow-y: auto; }
@@ -135,8 +140,8 @@
 
         <div class="footer-copyright">
             <div class="footer-logos">
-                <img src="logo.png" alt="Legologlar" class="footer-mini-img">
-                <img src="Fll-yatay-logo.png" alt="FLL" class="footer-mini-img" onerror="this.style.display='none'">
+                <img src="logo.png" alt="Legologlar" class="footer-logo-main">
+                <img src="Fll-yatay-logo.jpg" alt="FLL" class="footer-logo-fll" onerror="this.style.display='none'">
             </div>
             <div class="copyright-text">
                 <strong>© 2024 FLL LEGOLOGLAR Takımı</strong><br>
